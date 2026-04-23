@@ -11,6 +11,7 @@
 		1A7BB5BB1FA9EF3CABDBA713 /* WidgetWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCCBCDFEE285B9285D084A8 /* WidgetWebViewController.swift */; };
 		279C88AB0DE44F3AAB7018AD /* server.js in Resources */ = {isa = PBXBuildFile; fileRef = 02A770F22953E6CDD30517F1 /* server.js */; };
 		2F5D9E2E5064CD705AC8CFCD /* GettingStarted.jsx in Resources */ = {isa = PBXBuildFile; fileRef = 3FDDDB9C8679A4B966D6A206 /* GettingStarted.jsx */; };
+		3359213ADED02E9327088326 /* Dispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2D3406DC4096FD9C3745BA /* Dispatcher.swift */; };
 		3F7EF7F28FA0952D3299BA80 /* UBWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = D11F26852095408186D6328C /* UBWindow.m */; };
 		49BC4361E4FC28E4A8B0BF35 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = A9F1C931331F71B560C07449 /* Sparkle */; };
 		4C6669B3A7C1C7BA885EB7E9 /* WidgetWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A75287675C7D0B30185DA23 /* WidgetWebView.swift */; };
@@ -21,10 +22,8 @@
 		6803B60648C3FC39A5723F9D /* UebersichtTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F6A40861D2C003206E433F5 /* UebersichtTests.m */; };
 		6B916F9D9B7C32802C12BB84 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2CDD9912443BDA3F13484599 /* Credits.rtf */; };
 		7010AA51DC92AEA14C6C4C2A /* UBWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4B5DB4CB64442040C2B3C8 /* UBWebSocket.swift */; };
-		703CF64BB71E6073814E4985 /* UBDispatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = A8F4C0565AE78B850ABA2A83 /* UBDispatcher.m */; };
 		76897880975B6F810D2C8CDF /* public in Resources */ = {isa = PBXBuildFile; fileRef = 0EA2C4461A77695046468ED4 /* public */; };
 		77A0A8EC2A1803F8E1EACBB1 /* node-arm64 in Resources */ = {isa = PBXBuildFile; fileRef = 3220AC642E1DAFB4BCC2343C /* node-arm64 */; };
-		78C1294D1E2A6AB6E1A1F468 /* UBListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 58429AA0C8C8E5034D9ECEE5 /* UBListener.m */; };
 		79641E9B3A8F59D4938D12F8 /* node-x64 in Resources */ = {isa = PBXBuildFile; fileRef = 6DB453FCCEB0E66FF3B74F81 /* node-x64 */; };
 		7A8856865D460CB1A7BA0750 /* UBRefreshCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 236AA501FCD93396B80094B3 /* UBRefreshCommand.m */; };
 		8250E69B0E3735A8B133835F /* widget-status-visible@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 869E775E17DC5D071BD5586C /* widget-status-visible@2x.png */; };
@@ -50,6 +49,7 @@
 		D556C6ACF5B91FC3AC22B2E6 /* UBReloadCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C51C0BE8BB0402C738729521 /* UBReloadCommand.m */; };
 		DB5899001AB3DBB18CF3D974 /* uebersicht-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 948143BD21A24D5D67200BA0 /* uebersicht-logo.png */; };
 		DFA0AA385B9CD741A0CBE94F /* UBWidgetsStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D879CC852A8963EF7B1DA23 /* UBWidgetsStore.m */; };
+		E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */; };
 		F67A653B9C7062653B19FB3D /* UBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7486DCD22516307E0B834B24 /* UBAppDelegate.m */; };
 		FC6E76EC0E02E338BAFB3B9A /* Perf.jsx in Resources */ = {isa = PBXBuildFile; fileRef = 8976052859BF2DA38BE73FDE /* Perf.jsx */; };
 /* End PBXBuildFile section */
@@ -81,13 +81,11 @@
 		24B5E6A82C803692F56737FD /* UBApplication.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBApplication.m; sourceTree = "<group>"; };
 		2CDD9912443BDA3F13484599 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		3220AC642E1DAFB4BCC2343C /* node-arm64 */ = {isa = PBXFileReference; path = "node-arm64"; sourceTree = "<group>"; };
-		3507F3C673E11B7219F9260F /* UBListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBListener.h; sourceTree = "<group>"; };
 		3C14667EABD24CF50FF1EFE7 /* Uebersicht.sdef */ = {isa = PBXFileReference; path = Uebersicht.sdef; sourceTree = "<group>"; };
 		3F6A40861D2C003206E433F5 /* UebersichtTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UebersichtTests.m; sourceTree = "<group>"; };
 		3FDDDB9C8679A4B966D6A206 /* GettingStarted.jsx */ = {isa = PBXFileReference; path = GettingStarted.jsx; sourceTree = "<group>"; };
 		464017A37A2C692DA8488532 /* UBPreferencesController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UBPreferencesController.xib; sourceTree = "<group>"; };
 		4BD2A7D7B11C9A3945A29F6C /* UBRefreshCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRefreshCommand.h; sourceTree = "<group>"; };
-		58429AA0C8C8E5034D9ECEE5 /* UBListener.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBListener.m; sourceTree = "<group>"; };
 		61E9F8B9324B662DCC0E1AE5 /* UBScreensController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBScreensController.h; sourceTree = "<group>"; };
 		6DB453FCCEB0E66FF3B74F81 /* node-x64 */ = {isa = PBXFileReference; path = "node-x64"; sourceTree = "<group>"; };
 		6E944ECE6EC5E094BE7CCFC3 /* widget-status-hidden.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-hidden.png"; sourceTree = "<group>"; };
@@ -104,12 +102,11 @@
 		8DFA923298ED6C9046D7F5AC /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		912B77B5405F36A8288FD71A /* UBWindowsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBWindowsController.h; sourceTree = "<group>"; };
 		948143BD21A24D5D67200BA0 /* uebersicht-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "uebersicht-logo.png"; sourceTree = "<group>"; };
-		99F43C44ADF0283F7734D9C3 /* UBDispatcher.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBDispatcher.h; sourceTree = "<group>"; };
 		9C8B952C806D1DCC2CC78EA5 /* Uebersicht.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uebersicht.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D879CC852A8963EF7B1DA23 /* UBWidgetsStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetsStore.m; sourceTree = "<group>"; };
 		9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeolocationTests.swift; sourceTree = "<group>"; };
 		A2AA9636AA3EEBC32E7BE4FA /* UBPreferencesController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBPreferencesController.h; sourceTree = "<group>"; };
-		A8F4C0565AE78B850ABA2A83 /* UBDispatcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBDispatcher.m; sourceTree = "<group>"; };
+		B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
 		B13BA020F7866DC72AAF63BC /* status-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "status-icon.png"; sourceTree = "<group>"; };
 		BF637B4C38D37B782EF0EB62 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C1576EA06930F9E9DC654DA7 /* UBScreensController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBScreensController.m; sourceTree = "<group>"; };
@@ -118,6 +115,7 @@
 		C696F4B32A2E70BC297A6637 /* geolocation.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = geolocation.js; sourceTree = "<group>"; };
 		CA7CB91069255A4C82FD6806 /* widget-status-visible.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-visible.png"; sourceTree = "<group>"; };
 		CB5C8FC47C1E0CD11FB370C7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CC2D3406DC4096FD9C3745BA /* Dispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dispatcher.swift; sourceTree = "<group>"; };
 		D11F26852095408186D6328C /* UBWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWindow.m; sourceTree = "<group>"; };
 		D58097606BE214794762E968 /* SwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTests.swift; sourceTree = "<group>"; };
 		D61D18C22BEC198926345AB1 /* Geolocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geolocation.swift; sourceTree = "<group>"; };
@@ -194,7 +192,9 @@
 		AA5F881F9C092684A0604026 /* Swift */ = {
 			isa = PBXGroup;
 			children = (
+				CC2D3406DC4096FD9C3745BA /* Dispatcher.swift */,
 				D61D18C22BEC198926345AB1 /* Geolocation.swift */,
+				B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */,
 				0B4B5DB4CB64442040C2B3C8 /* UBWebSocket.swift */,
 				1A75287675C7D0B30185DA23 /* WidgetWebView.swift */,
 				DDCCBCDFEE285B9285D084A8 /* WidgetWebViewController.swift */,
@@ -218,10 +218,6 @@
 				7486DCD22516307E0B834B24 /* UBAppDelegate.m */,
 				2119F80F74857F9D220A507E /* UBApplication.h */,
 				24B5E6A82C803692F56737FD /* UBApplication.m */,
-				99F43C44ADF0283F7734D9C3 /* UBDispatcher.h */,
-				A8F4C0565AE78B850ABA2A83 /* UBDispatcher.m */,
-				3507F3C673E11B7219F9260F /* UBListener.h */,
-				58429AA0C8C8E5034D9ECEE5 /* UBListener.m */,
 				A2AA9636AA3EEBC32E7BE4FA /* UBPreferencesController.h */,
 				464017A37A2C692DA8488532 /* UBPreferencesController.xib */,
 				4BD2A7D7B11C9A3945A29F6C /* UBRefreshCommand.h */,
@@ -401,11 +397,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3359213ADED02E9327088326 /* Dispatcher.swift in Sources */,
 				94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */,
+				E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */,
 				F67A653B9C7062653B19FB3D /* UBAppDelegate.m in Sources */,
 				9AA213E9F13EF64A08DDFB58 /* UBApplication.m in Sources */,
-				703CF64BB71E6073814E4985 /* UBDispatcher.m in Sources */,
-				78C1294D1E2A6AB6E1A1F468 /* UBListener.m in Sources */,
 				7A8856865D460CB1A7BA0750 /* UBRefreshCommand.m in Sources */,
 				D556C6ACF5B91FC3AC22B2E6 /* UBReloadCommand.m in Sources */,
 				A9A7AFE1622208D2360BE70A /* UBScreensController.m in Sources */,

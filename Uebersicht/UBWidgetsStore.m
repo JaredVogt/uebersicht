@@ -7,7 +7,7 @@
 //
 
 #import "UBWidgetsStore.h"
-#import "UBListener.h"
+#import "Uebersicht-Swift.h"
 
 
 @implementation UBWidgetsStore {

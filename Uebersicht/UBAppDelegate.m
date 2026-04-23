@@ -151,11 +151,11 @@ int const PORT = 41416;
             NSLog(@"couldn't find an open port. Giving up...");
         }
         if (self->keepServerAlive) {
-            [self
-                performSelector: @selector(startUp)
-                withObject: nil
-                afterDelay: 1.0
-            ];
+            dispatch_after(
+                dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)),
+                dispatch_get_main_queue(),
+                ^{ [self startUp]; }
+            );
         }
     };
     
@@ -444,11 +444,12 @@ void wallpaperSettingsChanged(
                                     CFRangeMake(0,CFStringGetLength(path)),
                                     kCFCompareCaseInsensitive,
                                     NULL) == true) {
-            [(__bridge UBAppDelegate*)this
-                performSelector:@selector(wallpaperChanged:)
-                withObject:nil
-                afterDelay:0.5
-            ];
+            UBAppDelegate* delegate = (__bridge UBAppDelegate*)this;
+            dispatch_after(
+                dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+                dispatch_get_main_queue(),
+                ^{ [delegate wallpaperChanged:nil]; }
+            );
         }
     }
 }

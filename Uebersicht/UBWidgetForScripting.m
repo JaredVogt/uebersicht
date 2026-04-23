@@ -7,8 +7,8 @@
 //
 
 #import "UBWidgetForScripting.h"
-#import "UBDispatcher.h"
 #import "UBAppDelegate.h"
+#import "Uebersicht-Swift.h"
 
 static UBDispatcher* dispatcher;
 
