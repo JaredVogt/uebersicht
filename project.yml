@@ -1,0 +1,151 @@
+name: Uebersicht
+
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+  bundleIdPrefix: tracesOf
+  developmentLanguage: en
+
+settings:
+  base:
+    MARKETING_VERSION: "2.0"
+    CURRENT_PROJECT_VERSION: 83
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    SWIFT_UPCOMING_FEATURE_BARE_SLASH_REGEX_LITERALS: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CLANG_ENABLE_OBJC_ARC: YES
+    CLANG_ENABLE_OBJC_WEAK: YES
+    CLANG_ENABLE_MODULES: YES
+    GCC_C_LANGUAGE_STANDARD: gnu17
+    ALWAYS_SEARCH_USER_PATHS: NO
+    DEAD_CODE_STRIPPING: YES
+    ENABLE_HARDENED_RUNTIME: YES
+    COMBINE_HIDPI_IMAGES: YES
+    GCC_PREFIX_HEADER: Uebersicht/Uebersicht-Prefix.pch
+    GCC_PRECOMPILE_PREFIX_HEADER: YES
+    SWIFT_OBJC_BRIDGING_HEADER: Uebersicht/Uebersicht-Bridging-Header.h
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  configs:
+    Debug:
+      SWIFT_OPTIMIZATION_LEVEL: -Onone
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      GCC_OPTIMIZATION_LEVEL: 0
+      GCC_PREPROCESSOR_DEFINITIONS:
+        - "DEBUG=1"
+        - "$(inherited)"
+      ONLY_ACTIVE_ARCH: YES
+    Release:
+      SWIFT_OPTIMIZATION_LEVEL: -O
+      GCC_OPTIMIZATION_LEVEL: s
+      ENABLE_NS_ASSERTIONS: NO
+      ONLY_ACTIVE_ARCH: NO
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
+
+targets:
+  Uebersicht:
+    type: application
+    platform: macOS
+    sources:
+      - path: Uebersicht
+        excludes:
+          - "Uebersicht-Prefix.pch"
+          - "Uebersicht-Bridging-Header.h"
+          - "Uebersicht-Info.plist"
+          - "Uebersicht.entitlements"
+          - "UBWebSocket.h"
+          - "UBWebSocket.m"
+          # `UBAppDelegate.m` #imports `UBPreferencesController.m` directly,
+          # so don't compile it a second time.
+          - "UBPreferencesController.m"
+      - path: Uebersicht/GettingStarted.jsx
+        type: file
+        buildPhase: resources
+      - path: Uebersicht/Perf.jsx
+        type: file
+        buildPhase: resources
+      - path: Uebersicht/geolocation.js
+        type: file
+        buildPhase: resources
+      - path: Uebersicht/Uebersicht.sdef
+        type: file
+        buildPhase: resources
+      - path: server/release/public
+        type: folder
+        buildPhase: resources
+      - path: server/release/node_modules
+        type: folder
+        buildPhase: resources
+      - path: server/release/localnode
+        type: file
+        buildPhase: resources
+      - path: server/release/server.js
+        type: file
+        buildPhase: resources
+      - path: server/release/node-arm64
+        type: file
+        buildPhase: resources
+      - path: server/release/node-x64
+        type: file
+        buildPhase: resources
+    dependencies:
+      - package: Sparkle
+        product: Sparkle
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: tracesOf.Uebersicht
+        PRODUCT_NAME: Uebersicht
+        INFOPLIST_FILE: Uebersicht/Uebersicht-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Uebersicht/Uebersicht.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../Frameworks"
+        CODE_SIGN_STYLE: Automatic
+    postBuildScripts:
+      - name: Re-sign bundled helpers
+        runOnlyWhenInstalling: false
+        shell: /bin/bash
+        script: |
+          set -e
+          BUILD="${BUILT_PRODUCTS_DIR}"
+          IDENTITY="${CODE_SIGN_IDENTITY:-}"
+          [ -z "$IDENTITY" ] && IDENTITY="-"
+
+          sign_if_exists() {
+            local path="$1"
+            local use_entitlements="$2"
+            if [ -e "$path" ]; then
+              if [ "$use_entitlements" = "yes" ] && [ -n "${CODE_SIGN_ENTITLEMENTS:-}" ]; then
+                codesign --entitlements "$CODE_SIGN_ENTITLEMENTS" --force -o runtime --sign "$IDENTITY" "$path" || true
+              else
+                codesign --force --deep -o runtime --sign "$IDENTITY" "$path" || true
+              fi
+            fi
+          }
+
+          sign_if_exists "$BUILD/$FRAMEWORKS_FOLDER_PATH/Sparkle.framework" no
+          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node-arm64" yes
+          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node-x64" yes
+          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node_modules/fsevents/fsevents.node" no
+
+  UebersichtTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: UebersichtTests
+        excludes:
+          - "UebersichtTests-Info.plist"
+    dependencies:
+      - target: Uebersicht
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: test.uebersicht
+        INFOPLIST_FILE: UebersichtTests/UebersichtTests-Info.plist
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Uebersicht.app/Contents/MacOS/Uebersicht

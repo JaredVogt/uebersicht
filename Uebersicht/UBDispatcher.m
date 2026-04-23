@@ -7,7 +7,7 @@
 //
 
 #import "UBDispatcher.h"
-#import "UBWebSocket.h"
+#import "Uebersicht-Swift.h"
 
 @implementation UBDispatcher
 

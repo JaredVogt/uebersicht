@@ -7,7 +7,7 @@
 //
 
 #import "UBListener.h"
-#import "UBWebSocket.h"
+#import "Uebersicht-Swift.h"
 
 @implementation UBListener {
     NSMutableDictionary* listeners;

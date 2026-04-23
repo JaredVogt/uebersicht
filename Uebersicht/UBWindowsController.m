@@ -8,10 +8,6 @@
 
 #import "UBWindowsController.h"
 #import "UBWindowGroup.h"
-#import "WKInspector.h"
-#import "WKView.h"
-#import "WKPage.h"
-#import "WKWebViewInternal.h"
 
 @import WebKit;
 
@@ -125,35 +121,23 @@
 
 - (void)showDebugConsoleForWindow:(NSWindow*)window
 {
-    WKPageRef page = NULL;
-    SEL pageForTesting = @selector(_pageForTesting);
-    
-    if ([window.contentView.subviews[0] isKindOfClass:[WKView class]]) {
-        WKView* webview = window.contentView.subviews[0];
-        page = webview.pageRef;
-    } else if ([window.contentView respondsToSelector:pageForTesting]) {
-        page = (__bridge WKPageRef)([window.contentView
-            performSelector: pageForTesting
-        ]);
-    }
-    
-    if (page) {
-        WKInspectorRef inspector = WKPageGetInspector(page);
-
-        [NSApp activateIgnoringOtherApps:YES];
-        
-        WKInspectorShowConsole(inspector);
-        [self
-            performSelector: @selector(detachInspector:)
-            withObject: (__bridge id)(inspector)
-            afterDelay: 0
+    // macOS 13.3+: `WKWebView.isInspectable` replaces every `WKInspectorRef`
+    // dance we used to do through private WebKit headers. Widgets already
+    // have `isInspectable = YES` set in `WidgetWebView.init`, so the inspector
+    // is reachable from Safari's Develop menu: Develop → [This Mac] → <widget>.
+    // We launch Safari and activate it so the user only has one click left.
+    NSURL* safari = [[NSWorkspace sharedWorkspace]
+        URLForApplicationWithBundleIdentifier:@"com.apple.Safari"
+    ];
+    if (safari) {
+        NSWorkspaceOpenConfiguration* cfg = [NSWorkspaceOpenConfiguration configuration];
+        cfg.activates = YES;
+        [[NSWorkspace sharedWorkspace]
+            openApplicationAtURL:safari
+            configuration:cfg
+            completionHandler:nil
         ];
     }
-}
-
-- (void)detachInspector:(WKInspectorRef)inspector
-{
-     WKInspectorDetach(inspector);
 }
 
 - (void)workspaceChanged

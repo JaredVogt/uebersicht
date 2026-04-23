@@ -16,7 +16,7 @@
 #import "UBScreensController.h"
 #import "UBWidgetsController.h"
 #import "UBWidgetsStore.h"
-#import "UBWebSocket.h"
+#import "Uebersicht-Swift.h"
 #import "UBWindowsController.h"
 
 int const PORT = 41416;

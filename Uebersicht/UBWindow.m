@@ -14,7 +14,7 @@
 //
 
 #import "UBWindow.h"
-#import "UBWebViewController.h"
+#import "Uebersicht-Swift.h"
 
 @implementation UBWindow {
     UBWebViewController* webViewController;
