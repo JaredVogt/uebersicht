@@ -8,10 +8,10 @@ function isKeepAliveError(err) {
   return err && err.message.indexOf('Request has been terminated') === 0;
 }
 
-module.exports = function runShellCommand(command, callback) {
-  const request = post('/run/')
-    .retry(2, isKeepAliveError)
-    .send(command);
+module.exports = function runShellCommand(command, callback, widgetId) {
+  const request = post('/run/').retry(2, isKeepAliveError);
+  if (widgetId) request.set('X-Widget-Id', widgetId);
+  request.send(command);
   return callback
     ? request.end((err, res) => callback(wrapError(err, res), (res || {}).text))
     : request

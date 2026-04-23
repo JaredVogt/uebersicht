@@ -62,7 +62,7 @@
 			containerPortal = DC43AD7417EC2D9500241CC2 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = DC43AD7B17EC2D9500241CC2;
-			remoteInfo = "Übersicht";
+			remoteInfo = "Uebersicht";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -82,7 +82,7 @@
 		DC404DF11D2844E100305CE2 /* UBWebViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UBWebViewController.h; sourceTree = "<group>"; };
 		DC404DF21D2844E100305CE2 /* UBWebViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = UBWebViewController.m; sourceTree = "<group>"; tabWidth = 4; };
 		DC404DF41D294B3100305CE2 /* geolocation.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = geolocation.js; sourceTree = "<group>"; };
-		DC43AD7C17EC2D9500241CC2 /* Übersicht.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Übersicht.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC43AD7C17EC2D9500241CC2 /* Uebersicht.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Uebersicht.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC43AD7F17EC2D9500241CC2 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		DC43AD8217EC2D9500241CC2 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		DC43AD8317EC2D9500241CC2 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
@@ -218,7 +218,7 @@
 		DC43AD7D17EC2D9500241CC2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DC43AD7C17EC2D9500241CC2 /* Übersicht.app */,
+				DC43AD7C17EC2D9500241CC2 /* Uebersicht.app */,
 				DC43AD9D17EC2D9500241CC2 /* UebersichtTests.xctest */,
 			);
 			name = Products;
@@ -377,8 +377,8 @@
 			dependencies = (
 			);
 			name = Uebersicht;
-			productName = "Übersicht";
-			productReference = DC43AD7C17EC2D9500241CC2 /* Übersicht.app */;
+			productName = "Uebersicht";
+			productReference = DC43AD7C17EC2D9500241CC2 /* Uebersicht.app */;
 			productType = "com.apple.product-type.application";
 		};
 		DC43AD9C17EC2D9500241CC2 /* UebersichtTests */ = {
@@ -396,7 +396,7 @@
 				DC43ADA217EC2D9500241CC2 /* PBXTargetDependency */,
 			);
 			name = UebersichtTests;
-			productName = "ÜbersichtTests";
+			productName = "UebersichtTests";
 			productReference = DC43AD9D17EC2D9500241CC2 /* UebersichtTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
@@ -411,7 +411,7 @@
 				ORGANIZATIONNAME = tracesOf;
 				TargetAttributes = {
 					DC43AD7B17EC2D9500241CC2 = {
-						DevelopmentTeam = S3P44NRLCW;
+						DevelopmentTeam = 2B93VPDV27;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.HardenedRuntime = {
@@ -766,12 +766,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Uebersicht/Uebersicht.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 82;
-				DEVELOPMENT_TEAM = S3P44NRLCW;
+				DEVELOPMENT_TEAM = 2B93VPDV27;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -787,7 +787,7 @@
 				MARKETING_VERSION = 1.6;
 				OTHER_CODE_SIGN_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = tracesOf.Uebersicht;
-				PRODUCT_NAME = "Übersicht";
+				PRODUCT_NAME = "Uebersicht";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
@@ -801,12 +801,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Uebersicht/Uebersicht.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 82;
-				DEVELOPMENT_TEAM = S3P44NRLCW;
+				DEVELOPMENT_TEAM = 2B93VPDV27;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -822,7 +822,7 @@
 				MARKETING_VERSION = 1.6;
 				OTHER_CODE_SIGN_FLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = tracesOf.Uebersicht;
-				PRODUCT_NAME = "Übersicht";
+				PRODUCT_NAME = "Uebersicht";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
@@ -849,7 +849,7 @@
 				INFOPLIST_FILE = "UebersichtTests/UebersichtTests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = test.uebersicht;
 				PRODUCT_NAME = UebersichtTests;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Übersicht.app/Contents/MacOS/Übersicht";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Uebersicht.app/Contents/MacOS/Uebersicht";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
@@ -869,7 +869,7 @@
 				INFOPLIST_FILE = "UebersichtTests/UebersichtTests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = test.uebersicht;
 				PRODUCT_NAME = UebersichtTests;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Übersicht.app/Contents/MacOS/Übersicht";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Uebersicht.app/Contents/MacOS/Uebersicht";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;

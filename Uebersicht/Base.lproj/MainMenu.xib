@@ -14,10 +14,10 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <menu title="AMainMenu" systemMenu="main" id="29">
             <items>
-                <menuItem title="Übersicht" id="56">
-                    <menu key="submenu" title="Übersicht" systemMenu="apple" id="57">
+                <menuItem title="Uebersicht" id="56">
+                    <menu key="submenu" title="Uebersicht" systemMenu="apple" id="57">
                         <items>
-                            <menuItem title="About Übersicht" id="58">
+                            <menuItem title="About Uebersicht" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
@@ -36,7 +36,7 @@
                             <menuItem isSeparatorItem="YES" id="144">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Hide Übersicht" keyEquivalent="h" id="134">
+                            <menuItem title="Hide Uebersicht" keyEquivalent="h" id="134">
                                 <connections>
                                     <action selector="hide:" target="-1" id="367"/>
                                 </connections>
@@ -55,7 +55,7 @@
                             <menuItem isSeparatorItem="YES" id="149">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Quit Übersicht" keyEquivalent="q" id="136">
+                            <menuItem title="Quit Uebersicht" keyEquivalent="q" id="136">
                                 <connections>
                                     <action selector="terminate:" target="-3" id="449"/>
                                 </connections>
@@ -637,7 +637,7 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Help" systemMenu="help" id="491">
                         <items>
-                            <menuItem title="Übersicht Help" keyEquivalent="?" id="492">
+                            <menuItem title="Uebersicht Help" keyEquivalent="?" id="492">
                                 <connections>
                                     <action selector="showHelp:" target="-1" id="493"/>
                                 </connections>
@@ -657,7 +657,7 @@
         <customObject id="Y8H-N0-yva" customClass="SUUpdater"/>
         <menu id="MVS-hI-V8a" userLabel="Status Bar Menu">
             <items>
-                <menuItem title="About Übersicht" id="YQt-G2-uKH">
+                <menuItem title="About Uebersicht" id="YQt-G2-uKH">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="orderFrontStandardAboutPanel:" target="-2" id="VpR-KV-QA6"/>
@@ -703,7 +703,7 @@
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="V85-Ke-XHw"/>
-                <menuItem title="Quit Übersicht" id="0lC-di-1Ep">
+                <menuItem title="Quit Uebersicht" id="0lC-di-1Ep">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
                         <action selector="terminate:" target="-3" id="cGI-2B-ql0"/>

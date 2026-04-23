@@ -1,6 +1,6 @@
 //
 //  U_bersichtTests.m
-//  ÜbersichtTests
+//  UebersichtTests
 //
 //  Created by Felix Hageloh on 20/9/13.
 //  Copyright (c) 2013 Felix Hageloh. All rights reserved.
@@ -10,10 +10,10 @@
 #import "UBAppDelegate.h"
 #import "UBWindow.h"
 
-@interface ÜbersichtTests : XCTestCase
+@interface UebersichtTests : XCTestCase
 @end
 
-@implementation ÜbersichtTests {
+@implementation UebersichtTests {
     UBAppDelegate* deletgate;
 }
 

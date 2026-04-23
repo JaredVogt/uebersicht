@@ -1,6 +1,6 @@
 //
 //  UBWindow.m
-//  Übersicht
+//  Uebersicht
 //
 //  A window that sits on desktop level, is always fullscreen and doesn't show
 //  up in Mission Control

@@ -1,4 +1,4 @@
-// This is a simple example Widget to get you started with Übersicht.
+// This is a simple example Widget to get you started with Uebersicht.
 // For the full documentation please visit:
 // https://github.com/felixhageloh/uebersicht
 
@@ -53,7 +53,7 @@ export const render = ({output}) => {
     <div>
       <h1>Hi, {output}</h1>
       <p>
-        Thanks for trying out Übersicht!
+        Thanks for trying out Uebersicht!
         This is an example widget to get you started.
       </p>
       <p>

@@ -1,6 +1,6 @@
 //
 //  UBWindow.h
-//  Übersicht
+//  Uebersicht
 //
 //  Created by Felix Hageloh on 20/9/13.
 //  Copyright (c) 2013 Felix Hageloh.

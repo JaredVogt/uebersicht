@@ -1,6 +1,6 @@
 //
 //  UBPreferencesController.h
-//  Übersicht
+//  Uebersicht
 //
 //  Created by Felix Hageloh on 20/3/14.
 //  Copyright (c) 2014 Felix Hageloh.

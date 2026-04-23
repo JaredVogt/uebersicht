@@ -1,6 +1,6 @@
 //
 //  UBLocation.m
-//  Übersicht
+//  Uebersicht
 //
 //  Created by Felix Hageloh on 9/12/14.
 //  Copyright (c) 2014 tracesOf. All rights reserved.

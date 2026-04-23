@@ -1,6 +1,6 @@
 //
 //  UBPreferencesController.m
-//  Übersicht
+//  Uebersicht
 //
 //  Created by Felix Hageloh on 20/3/14.
 //  Copyright (c) 2014 Felix Hageloh.
@@ -112,7 +112,7 @@
     ];
     
     NSURL* defaultDir = [urls[0]
-        URLByAppendingPathComponent:@"Übersicht/widgets"
+        URLByAppendingPathComponent:@"Uebersicht/widgets"
         isDirectory:YES
     ];
     
@@ -147,7 +147,7 @@
                          toURL:[defaultWidgetDir URLByAppendingPathComponent:@"GettingStarted.jsx"]
                          error:&error];
     
-    NSURL* logo = [[NSBundle mainBundle] URLForResource:@"übersicht-logo" withExtension:@"png"];
+    NSURL* logo = [[NSBundle mainBundle] URLForResource:@"uebersicht-logo" withExtension:@"png"];
     
     [fileManager copyItemAtURL:logo
                          toURL:[defaultWidgetDir URLByAppendingPathComponent:@"logo.png"]

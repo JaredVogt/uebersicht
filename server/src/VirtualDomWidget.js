@@ -81,11 +81,17 @@ module.exports = function VirtualDomWidget(widgetObject) {
     const {command} = implementation;
     if (typeof command === 'function')
       return Promise.resolve(runCommandFunction(command));
-    else if (typeof command === 'string') return runShellCommand(command);
+    else if (typeof command === 'string')
+      return runShellCommand(command, undefined, implementation.id);
     else return Promise.resolve();
   }
 
   function dispatch(event) {
+    // Widget has been destroyed (e.g. user hid it) but a RAF/setInterval the
+    // widget set up directly is still firing. Silently no-op so we don't
+    // route through handleError → fetchErrorDetails, which would make a
+    // fetch on every leaked frame and saturate the WebKit Networking IPC.
+    if (!renderLoop) return;
     try {
       const nextState = implementation.updateState(event, renderLoop.state);
       renderLoop.update(nextState);
