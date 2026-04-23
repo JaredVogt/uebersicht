@@ -23,7 +23,9 @@ public final class WidgetWebView: WKWebView {
     public override init(frame: CGRect, configuration: WKWebViewConfiguration) {
         super.init(frame: frame, configuration: configuration)
         applyTransparentBackground()
+        #if DEBUG
         isInspectable = true
+        #endif
     }
 
     @available(*, unavailable)

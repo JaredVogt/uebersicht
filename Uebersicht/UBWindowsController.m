@@ -8,11 +8,13 @@
 
 #import "UBWindowsController.h"
 #import "UBWindowGroup.h"
+#import "UBWidgetsStore.h"
 
 @import WebKit;
 
 @implementation UBWindowsController {
     NSMutableDictionary* windows;
+    BOOL interactionEnabled;
 }
 
 - (id)init
@@ -27,16 +29,19 @@
 
 - (void)updateWindows:(NSDictionary*)screens
               baseUrl:(NSURL*)baseUrl
-   interactionEnabled:(Boolean)interactionEnabled
+   interactionEnabled:(Boolean)enableInteraction
          forceRefresh:(Boolean)forceRefresh
 {
+    interactionEnabled = enableInteraction;
     NSMutableArray* obsoleteScreens = [[windows allKeys] mutableCopy];
     UBWindowGroup* windowGroup;
-    
+
     for(NSNumber* screenId in screens) {
         if (![windows objectForKey:screenId]) {
+            // Empty shell — no layers yet. `refreshLayerDemand:` creates
+            // layers once widget visibility info is available.
             windowGroup = [[UBWindowGroup alloc]
-                initWithInteractionEnabled: interactionEnabled
+                initWithInteractionEnabled: enableInteraction
             ];
             [windows setObject:windowGroup forKey:screenId];
             [windowGroup loadUrl: [self screenUrl:screenId baseUrl:baseUrl]];
@@ -46,27 +51,87 @@
                 [windowGroup reload];
             }
         }
-        
+
         [windowGroup setFrame:[self screenRect:screenId] display:YES];
         [obsoleteScreens removeObject:screenId];
     }
-    
+
     for (NSNumber* screenId in obsoleteScreens) {
         [windows[screenId] close];
         [windows removeObjectForKey:screenId];
     }
-    
+
     NSLog(@"using %lu screens", (unsigned long)[windows count]);
+}
+
+- (void)refreshLayerDemand:(UBWidgetsStore*)store
+{
+    if (!store || [windows count] == 0) return;
+
+    NSNumber* mainScreenId = [[NSScreen mainScreen]
+        deviceDescription
+    ][@"NSScreenNumber"];
+
+    NSArray* widgetIds = [store sortedWidgets];
+
+    for (NSNumber* screenId in windows) {
+        UBWindowGroup* group = windows[screenId];
+        BOOL isMain = [screenId isEqualToNumber:mainScreenId];
+        BOOL needForeground = NO;
+        BOOL needBackground = NO;
+        BOOL needAgnostic = NO;
+
+        for (NSString* widgetId in widgetIds) {
+            NSDictionary* settings = [store getSettings:widgetId];
+            if (![self widgetVisible:settings onScreen:screenId isMain:isMain]) continue;
+
+            if (interactionEnabled) {
+                if ([settings[@"inBackground"] boolValue]) {
+                    needBackground = YES;
+                } else {
+                    needForeground = YES;
+                }
+            } else {
+                needAgnostic = YES;
+            }
+        }
+
+        if (interactionEnabled) {
+            if (needForeground) [group ensureLayerOfType:UBWindowTypeForeground];
+            else                [group removeLayerOfType:UBWindowTypeForeground];
+
+            if (needBackground) [group ensureLayerOfType:UBWindowTypeBackground];
+            else                [group removeLayerOfType:UBWindowTypeBackground];
+        } else {
+            if (needAgnostic) [group ensureLayerOfType:UBWindowTypeAgnostic];
+            else              [group removeLayerOfType:UBWindowTypeAgnostic];
+        }
+    }
+}
+
+- (BOOL)widgetVisible:(NSDictionary*)settings
+             onScreen:(NSNumber*)screenId
+               isMain:(BOOL)isMain
+{
+    if (!settings) return NO;
+    if ([settings[@"hidden"] boolValue]) return NO;
+    if ([settings[@"showOnAllScreens"] boolValue]) return YES;
+    if ([settings[@"showOnMainScreen"] boolValue]) return isMain;
+    if ([settings[@"showOnSelectedScreens"] boolValue]) {
+        NSArray* screens = settings[@"screens"];
+        return [screens containsObject:screenId];
+    }
+    return NO;
 }
 
 - (NSRect)screenRect:(NSNumber*)screenId
 {
     NSScreen* screen = [self getNSScreen:screenId];
-    
+
     CGFloat auxiliaryHeight = screen.auxiliaryTopLeftArea.size.height;
     CGFloat windowHeight = screen.visibleFrame.size.height +
         (screen.visibleFrame.origin.y - screen.frame.origin.y);
-    
+
     // If the remaining visible height is exactly the auxiliaryHeight, the menu
     // bar is hidden. There seems to be no other way to dedect this reliably
     if (screen.frame.size.height - windowHeight == auxiliaryHeight) {
@@ -88,7 +153,7 @@
             return screen;
         }
     };
-    
+
     return nil;
 }
 
@@ -114,7 +179,7 @@
     NSWindow* window;
     window = [(UBWindowGroup*)windows[screenId] foreground];
     if (window) [self showDebugConsoleForWindow: window];
-    
+
     window = [(UBWindowGroup*)windows[screenId] background];
     if (window) [self showDebugConsoleForWindow: window];
 }

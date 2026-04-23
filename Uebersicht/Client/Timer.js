@@ -23,7 +23,10 @@ export default function Timer() {
     start() {
       if (!started) {
         started = true;
-        loop();
+        // Spread initial ticks across a ~500 ms window so N widgets don't all
+        // spawn subprocesses at t=0. After the first tick, each widget's
+        // refreshFrequency cadence desyncs naturally.
+        timer = setTimeout(loop, Math.random() * 500);
       }
       return api;
     },

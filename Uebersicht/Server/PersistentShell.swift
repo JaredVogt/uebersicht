@@ -30,6 +30,13 @@ public actor PersistentShell {
     private var readBuffer = Data()
     private var alive = true
 
+    // Exactly one `run()` is outstanding at a time (the actor serializes
+    // them). These hold that run's sentinel + resumption handle so the
+    // `readabilityHandler`-driven `receivedData` can resolve it the moment
+    // the marker shows up — no polling.
+    private var pendingMarker: String?
+    private var pendingContinuation: CheckedContinuation<Result, any Error>?
+
     public init(workingDirectory: URL, loginShell: Bool) throws {
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/bin/bash")
@@ -49,9 +56,19 @@ public actor PersistentShell {
         self.stdinHandle = inPipe.fileHandleForWriting
         self.stdoutHandle = outPipe.fileHandleForReading
 
+        // `readabilityHandler` fires on a background queue the moment the
+        // pipe has new bytes. We hop back onto the actor to append to the
+        // buffer + check for the run's sentinel. Replaces a `Task.sleep(8ms)`
+        // poll loop.
+        stdoutHandle.readabilityHandler = { [weak self] handle in
+            let data = handle.availableData
+            Task { await self?.receivedData(data) }
+        }
+
         do {
             try proc.run()
         } catch {
+            stdoutHandle.readabilityHandler = nil
             throw Failure.launchFailed(String(describing: error))
         }
 
@@ -72,18 +89,30 @@ public actor PersistentShell {
         // code with `$?`, then print a newline-prefixed sentinel + status.
         let script = "{ \(command)\n}; __ub_rc=$?; printf '\\n\(marker):%d\\n' $__ub_rc\n"
         stdinHandle.write(Data(script.utf8))
-        return try await readUntil(marker: marker)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            pendingMarker = marker
+            pendingContinuation = continuation
+            // Data for *this* marker may have arrived on the background queue
+            // before we were able to register — the handler would have
+            // appended it but had no pending marker to match against yet.
+            // Drain it now.
+            tryResolvePending()
+        }
     }
 
     /// Terminates the shell process. Idempotent.
     public func stop() {
         alive = false
+        stdoutHandle.readabilityHandler = nil
+        failPending(Failure.shellDied)
         if process.isRunning {
             process.terminate()
         }
     }
 
     deinit {
+        stdoutHandle.readabilityHandler = nil
         if process.isRunning {
             process.terminate()
         }
@@ -91,27 +120,32 @@ public actor PersistentShell {
 
     // MARK: - Internals
 
-    /// Reads stdout chunks until `marker:<rc>\n` appears on its own line.
-    /// Leftover bytes after the marker become the head of the next run's
-    /// buffer — keeps us resilient to the shell coalescing multiple writes.
-    private func readUntil(marker: String) async throws -> Result {
-        while true {
-            if let result = splitOnMarker(marker: marker) {
-                return result
-            }
-            let chunk = stdoutHandle.availableData
-            if chunk.isEmpty {
-                // Process died mid-command? Bail with a shellDied error so
-                // callers can recycle the shell.
-                if !process.isRunning {
-                    alive = false
-                    throw Failure.shellDied
-                }
-                try await Task.sleep(for: .milliseconds(8))
-                continue
-            }
-            readBuffer.append(chunk)
+    private func receivedData(_ data: Data) {
+        if data.isEmpty {
+            // EOF — shell's stdout closed (process ended).
+            alive = false
+            failPending(Failure.shellDied)
+            return
         }
+        readBuffer.append(data)
+        tryResolvePending()
+    }
+
+    private func tryResolvePending() {
+        guard let marker = pendingMarker,
+              let continuation = pendingContinuation,
+              let result = splitOnMarker(marker: marker)
+        else { return }
+        pendingMarker = nil
+        pendingContinuation = nil
+        continuation.resume(returning: result)
+    }
+
+    private func failPending(_ error: any Error) {
+        guard let continuation = pendingContinuation else { return }
+        pendingMarker = nil
+        pendingContinuation = nil
+        continuation.resume(throwing: error)
     }
 
     private func splitOnMarker(marker: String) -> Result? {

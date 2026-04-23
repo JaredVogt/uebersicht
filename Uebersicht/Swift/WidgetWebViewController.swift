@@ -23,6 +23,7 @@ public final class WidgetWebViewController: NSObject {
 
     @objc public private(set) var view: NSView!
     private var url: URL?
+    private var displayLink: CADisplayLink?
 
     // Single configuration shared across all widgets so they live in the same
     // process pool / data store (keeps cookies, service workers, IndexedDB in
@@ -35,6 +36,41 @@ public final class WidgetWebViewController: NSObject {
     public init(frame: NSRect) {
         super.init()
         view = makeWebView(frame: frame)
+        startDisplayLinkIfNeeded()
+    }
+
+    /// Pins a `CADisplayLink` to the WebView so WebKit keeps servicing its
+    /// render + rAF pipeline at the display's native refresh rate even when
+    /// the Übersicht window is fully occluded by other app windows.
+    ///
+    /// Why this is needed: Übersicht's windows sit at `kCGNormalWindowLevel-1`
+    /// (foreground) or `kCGDesktopWindowLevel` (background). The moment an
+    /// opaque app window covers the desktop, macOS marks these windows as
+    /// occluded and WebKit throttles `requestAnimationFrame` to ~30 Hz or
+    /// 1 Hz. Widget animations (ants, bouncing-dot) visibly stutter whenever
+    /// the user isn't looking at the desktop — which is most of the time.
+    ///
+    /// The fix: drive an empty `evaluateJavaScript` call on every display
+    /// tick. That wakes the WebView's main thread and forces its next rAF
+    /// frame to schedule. CADisplayLink on macOS syncs to the display's
+    /// actual refresh rate (60/120/144 Hz), so this costs exactly one frame
+    /// slot per frame the display was going to render anyway.
+    ///
+    /// CADisplayLink on the AppKit side requires macOS 14+; the project's
+    /// deployment target is already 14.0 so no fallback is needed.
+    private func startDisplayLinkIfNeeded() {
+        guard let webView = view as? WKWebView else { return }
+        let link = webView.displayLink(target: self, selector: #selector(tickDisplay(_:)))
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    @objc private func tickDisplay(_ sender: CADisplayLink) {
+        // `evaluateJavaScript` with a no-op expression is the cheapest way to
+        // force WebKit to run one iteration of its event loop on the web
+        // content process. Any side-effect-free JS works; empty string would
+        // too but some WebKit builds short-circuit on literal empty input.
+        (view as? WKWebView)?.evaluateJavaScript("0;", completionHandler: nil)
     }
 
     // MARK: - Obj-C surface
@@ -75,6 +111,8 @@ public final class WidgetWebViewController: NSObject {
     }
 
     @objc public func destroy() {
+        displayLink?.invalidate()
+        displayLink = nil
         guard let webView = view as? WKWebView else { return }
         webView.navigationDelegate = nil
         webView.stopLoading()
@@ -86,7 +124,9 @@ public final class WidgetWebViewController: NSObject {
 
     private func makeWebView(frame: NSRect) -> WKWebView {
         let webView = WidgetWebView(frame: frame, configuration: Self.sharedConfig)
+        #if DEBUG
         webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        #endif
         webView.navigationDelegate = self
         return webView
     }
@@ -110,7 +150,10 @@ public final class WidgetWebViewController: NSObject {
 
         // Console bridge: forward browser console.{log,warn,error} + uncaught
         // errors to NSLog so headless sessions can see JS runtime state
-        // without attaching Safari's Web Inspector.
+        // without attaching Safari's Web Inspector. Release builds skip it
+        // entirely — the per-log string alloc + IPC hop is pure overhead
+        // when nothing reads NSLog.
+        #if DEBUG
         controller.add(ConsoleMessageHandler(), name: "ubConsole")
         controller.addUserScript(WKUserScript(
             source: """
@@ -147,6 +190,7 @@ public final class WidgetWebViewController: NSObject {
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
+        #endif
 
         // `uebersicht` channel: widget mouse enter/leave.
         controller.add(UebersichtMessageHandler(), name: "uebersicht")

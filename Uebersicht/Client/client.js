@@ -18,6 +18,27 @@ import detectWidgetHover from './detectWidgetHover.js';
 
 let userCssLink = null;
 
+// Rolling-average rAF rate counter exposed at `window.__ubFPS`. Lets the
+// Perf widget (or any widget) display the page's effective animation rate
+// so we can tell when macOS has throttled occluded windows below display
+// refresh. Zero overhead when nothing reads it.
+(function installFpsProbe() {
+  const samples = new Array(60).fill(16.6);
+  let idx = 0;
+  let last = performance.now();
+  function tick(now) {
+    samples[idx] = now - last;
+    last = now;
+    idx = (idx + 1) % samples.length;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  window.__ubFPS = () => {
+    const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+    return Math.round(1000 / avg);
+  };
+})();
+
 window.addEventListener('load', () => {
   sharedSocket.open(`ws://${window.location.host}`);
 
@@ -38,7 +59,7 @@ window.addEventListener('load', () => {
       // Kick off dynamic imports for every widget the server already knows
       // about. As each resolves, dispatch WIDGET_LOADED with its module.
       Object.keys(initialState.widgets).forEach((id) => {
-        loadWidget(id)
+        loadWidget(id, initialState.widgets[id].mtime)
           .then((impl) => store.dispatch(showWidget(id, impl)))
           .catch((err) => console.error('[ub] widget import failed', id, err.message));
       });
@@ -59,7 +80,7 @@ window.addEventListener('load', () => {
         if (action.type === 'WIDGET_ADDED') {
           store.dispatch(action);
           if (action.payload.error) return;
-          loadWidget(action.payload.id).then((impl) =>
+          loadWidget(action.payload.id, action.payload.mtime).then((impl) =>
             store.dispatch(showWidget(action.payload.id, impl))
           );
           return;
@@ -81,20 +102,15 @@ window.addEventListener('load', () => {
 // per-module identity is per-URL, so adding a `?v=<mtime>` query forces a
 // fresh parse.
 const widgetImports = new Map();
-function loadWidget(id) {
-  return fetch('/state/')
-    .then((r) => r.json())
-    .then((state) => {
-      const widget = state.widgets[id];
-      const cacheKey = `${id}@${widget?.mtime ?? ''}`;
-      if (!widgetImports.has(cacheKey)) {
-        widgetImports.set(
-          cacheKey,
-          import(/* @vite-ignore */ `/widgets/${id}?v=${widget?.mtime ?? Date.now()}`)
-        );
-      }
-      return widgetImports.get(cacheKey);
-    });
+function loadWidget(id, mtime) {
+  const cacheKey = `${id}@${mtime ?? ''}`;
+  if (!widgetImports.has(cacheKey)) {
+    widgetImports.set(
+      cacheKey,
+      import(/* @vite-ignore */ `/widgets/${id}?v=${mtime ?? Date.now()}`)
+    );
+  }
+  return widgetImports.get(cacheKey);
 }
 
 function reloadUserCSS() {

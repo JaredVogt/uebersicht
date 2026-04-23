@@ -95,6 +95,12 @@ public actor WidgetCoordinator {
     }
 
     public func stop() {
+        // Flush any pending debounced settings write so a quick-quit after
+        // the last user tweak doesn't lose it.
+        persistTask?.cancel()
+        persistTask = nil
+        writeSettingsToDisk()
+
         watcherTask?.cancel()
         watcherTask = nil
         watcher?.stop()
@@ -465,7 +471,23 @@ public actor WidgetCoordinator {
         settings = parsed
     }
 
+    // Debounce to coalesce bursts — toggling a few widgets from the menu
+    // otherwise produces one JSON-serialize + atomic-write per action. Matches
+    // the 500 ms batching most apps use for user-triggered settings writes;
+    // `stop()` flushes synchronously so quitting never loses the tail.
+    private var persistTask: Task<Void, Never>?
+    private static let persistDebounce: Duration = .milliseconds(500)
+
     private func persistSettings() {
+        persistTask?.cancel()
+        persistTask = Task { [weak self] in
+            try? await Task.sleep(for: Self.persistDebounce)
+            guard !Task.isCancelled else { return }
+            await self?.writeSettingsToDisk()
+        }
+    }
+
+    private func writeSettingsToDisk() {
         try? FileManager.default.createDirectory(
             at: config.settingsDirectory,
             withIntermediateDirectories: true

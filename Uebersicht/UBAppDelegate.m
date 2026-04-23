@@ -59,6 +59,11 @@ int const PORT = 41416;
     ];
     [widgetsStore onChange: ^(NSDictionary* widgets) {
         [self->widgetsController render];
+        // Widget/settings changes can flip per-screen layer demand
+        // (e.g., last foreground widget moved to background). Let the
+        // windows controller reconcile so idle layers are torn down and
+        // newly-needed layers hot-created.
+        [self->windowsController refreshLayerDemand:self->widgetsStore];
     }];
     
     // make sure notifcations always show
@@ -219,6 +224,9 @@ int const PORT = 41416;
             interactionEnabled: preferences.enableInteraction
             forceRefresh: needsRefresh
         ];
+        // Newly-added screens start with empty window groups; reconcile
+        // layers against current widget settings so they actually show up.
+        [windowsController refreshLayerDemand:widgetsStore];
         needsRefresh = NO;
     }
 }
