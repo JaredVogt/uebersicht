@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0123826F30051E9CD5F81FA5 /* localnode in Resources */ = {isa = PBXBuildFile; fileRef = 198D0CB2E4C19DE8BAE634E2 /* localnode */; };
+		06158D5DC62DB51CD2967EB2 /* JSXTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 193F140E93DA97B45C58A971 /* JSXTransformer.swift */; };
 		1A7BB5BB1FA9EF3CABDBA713 /* WidgetWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCCBCDFEE285B9285D084A8 /* WidgetWebViewController.swift */; };
 		279C88AB0DE44F3AAB7018AD /* server.js in Resources */ = {isa = PBXBuildFile; fileRef = 02A770F22953E6CDD30517F1 /* server.js */; };
 		2F5D9E2E5064CD705AC8CFCD /* GettingStarted.jsx in Resources */ = {isa = PBXBuildFile; fileRef = 3FDDDB9C8679A4B966D6A206 /* GettingStarted.jsx */; };
@@ -19,6 +20,7 @@
 		54DF515E298C083CC49A208A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DFA923298ED6C9046D7F5AC /* Images.xcassets */; };
 		5571D8192623A5705877CDD9 /* UBWindowsController.m in Sources */ = {isa = PBXBuildFile; fileRef = F9CC6F8D6498E59DA655B194 /* UBWindowsController.m */; };
 		5EF20B68BA390A747C0192DF /* node_modules in Resources */ = {isa = PBXBuildFile; fileRef = DD5C9DCA2D9B391B16C9B40E /* node_modules */; };
+		666C883CC1763C6DC891F02A /* WidgetServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE3EF6F2257DF40A94AA6A1 /* WidgetServer.swift */; };
 		6803B60648C3FC39A5723F9D /* UebersichtTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F6A40861D2C003206E433F5 /* UebersichtTests.m */; };
 		6B916F9D9B7C32802C12BB84 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 2CDD9912443BDA3F13484599 /* Credits.rtf */; };
 		7010AA51DC92AEA14C6C4C2A /* UBWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4B5DB4CB64442040C2B3C8 /* UBWebSocket.swift */; };
@@ -36,6 +38,7 @@
 		94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D61D18C22BEC198926345AB1 /* Geolocation.swift */; };
 		969D7201C4824C739FB7F447 /* WidgetWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69871DBEF39C84FBF70EE64F /* WidgetWatcher.swift */; };
 		9AA213E9F13EF64A08DDFB58 /* UBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 24B5E6A82C803692F56737FD /* UBApplication.m */; };
+		A3673F2AB55E48DD0F8B6A10 /* WidgetServerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8467C22F9C4141EA3DFC1C43 /* WidgetServerTests.swift */; };
 		A83551CCA6C493254227607F /* GeolocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */; };
 		A9A7AFE1622208D2360BE70A /* UBScreensController.m in Sources */ = {isa = PBXBuildFile; fileRef = C1576EA06930F9E9DC654DA7 /* UBScreensController.m */; };
 		AC91D7BECC43C704015E513A /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 08F4D991FCE00105C58A28A5 /* MainMenu.xib */; };
@@ -48,6 +51,7 @@
 		C13E35F3B859AA161683C9B0 /* widget-status-visible.png in Resources */ = {isa = PBXBuildFile; fileRef = CA7CB91069255A4C82FD6806 /* widget-status-visible.png */; };
 		CC5E53A53C4A049F02E74735 /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58097606BE214794762E968 /* SwiftTests.swift */; };
 		D556C6ACF5B91FC3AC22B2E6 /* UBReloadCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C51C0BE8BB0402C738729521 /* UBReloadCommand.m */; };
+		D63BC67EC568C9424B238BA4 /* JSXTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D728C21D23677A8919158B80 /* JSXTransformerTests.swift */; };
 		DB5899001AB3DBB18CF3D974 /* uebersicht-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 948143BD21A24D5D67200BA0 /* uebersicht-logo.png */; };
 		DBD6B01FE95F55C273549D87 /* CommandRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */; };
 		DC189D9E43D5A85BCA2F3949 /* WidgetWatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97902B92A1E10EE3A836FD2C /* WidgetWatcherTests.swift */; };
@@ -78,6 +82,7 @@
 		0F6E1587D97766C30959EBF8 /* UBScreenChangeListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBScreenChangeListener.h; sourceTree = "<group>"; };
 		129A9C6D26749DFDD91219F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1570F30858FF1A13842F3A7F /* UBWidgetForScripting.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetForScripting.m; sourceTree = "<group>"; };
+		193F140E93DA97B45C58A971 /* JSXTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSXTransformer.swift; sourceTree = "<group>"; };
 		198D0CB2E4C19DE8BAE634E2 /* localnode */ = {isa = PBXFileReference; path = localnode; sourceTree = "<group>"; };
 		1A75287675C7D0B30185DA23 /* WidgetWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetWebView.swift; sourceTree = "<group>"; };
 		2119F80F74857F9D220A507E /* UBApplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBApplication.h; sourceTree = "<group>"; };
@@ -96,12 +101,14 @@
 		6DB453FCCEB0E66FF3B74F81 /* node-x64 */ = {isa = PBXFileReference; path = "node-x64"; sourceTree = "<group>"; };
 		6E944ECE6EC5E094BE7CCFC3 /* widget-status-hidden.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-hidden.png"; sourceTree = "<group>"; };
 		6F979201FDFC6D05280CB46E /* UBWindowGroup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBWindowGroup.h; sourceTree = "<group>"; };
+		6FE3EF6F2257DF40A94AA6A1 /* WidgetServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetServer.swift; sourceTree = "<group>"; };
 		6FF2009EF0442BDBE94A6823 /* UBWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBWindow.h; sourceTree = "<group>"; };
 		72F1B82A221913A64E43E5E0 /* UBReloadCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBReloadCommand.h; sourceTree = "<group>"; };
 		7486DCD22516307E0B834B24 /* UBAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBAppDelegate.m; sourceTree = "<group>"; };
 		74DEB10171BD829F341332E2 /* UBWindowGroup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWindowGroup.m; sourceTree = "<group>"; };
 		7BE9829C1B786165046B8B93 /* UBWidgetsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetsController.m; sourceTree = "<group>"; };
 		7C396434EA2141F9687ECEC7 /* UebersichtTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UebersichtTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8467C22F9C4141EA3DFC1C43 /* WidgetServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetServerTests.swift; sourceTree = "<group>"; };
 		84DDDD017CF95BD0BE338C25 /* CommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunner.swift; sourceTree = "<group>"; };
 		869E775E17DC5D071BD5586C /* widget-status-visible@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-visible@2x.png"; sourceTree = "<group>"; };
 		8976052859BF2DA38BE73FDE /* Perf.jsx */ = {isa = PBXFileReference; path = Perf.jsx; sourceTree = "<group>"; };
@@ -127,6 +134,7 @@
 		D11F26852095408186D6328C /* UBWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWindow.m; sourceTree = "<group>"; };
 		D58097606BE214794762E968 /* SwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTests.swift; sourceTree = "<group>"; };
 		D61D18C22BEC198926345AB1 /* Geolocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geolocation.swift; sourceTree = "<group>"; };
+		D728C21D23677A8919158B80 /* JSXTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSXTransformerTests.swift; sourceTree = "<group>"; };
 		DD5C9DCA2D9B391B16C9B40E /* node_modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = node_modules; path = server/release/node_modules; sourceTree = SOURCE_ROOT; };
 		DDCCBCDFEE285B9285D084A8 /* WidgetWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetWebViewController.swift; sourceTree = "<group>"; };
 		DF4C09202C032316A986AEDB /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -160,6 +168,8 @@
 			isa = PBXGroup;
 			children = (
 				84DDDD017CF95BD0BE338C25 /* CommandRunner.swift */,
+				193F140E93DA97B45C58A971 /* JSXTransformer.swift */,
+				6FE3EF6F2257DF40A94AA6A1 /* WidgetServer.swift */,
 				69871DBEF39C84FBF70EE64F /* WidgetWatcher.swift */,
 			);
 			path = Server;
@@ -170,8 +180,10 @@
 			children = (
 				4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */,
 				9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */,
+				D728C21D23677A8919158B80 /* JSXTransformerTests.swift */,
 				D58097606BE214794762E968 /* SwiftTests.swift */,
 				3F6A40861D2C003206E433F5 /* UebersichtTests.m */,
+				8467C22F9C4141EA3DFC1C43 /* WidgetServerTests.swift */,
 				97902B92A1E10EE3A836FD2C /* WidgetWatcherTests.swift */,
 				ABBBD94C4A4D2CAC659BD716 /* InfoPlist.strings */,
 			);
@@ -420,6 +432,7 @@
 				EE2CD08C18E0D7CC35676F12 /* CommandRunner.swift in Sources */,
 				3359213ADED02E9327088326 /* Dispatcher.swift in Sources */,
 				94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */,
+				06158D5DC62DB51CD2967EB2 /* JSXTransformer.swift in Sources */,
 				E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */,
 				F67A653B9C7062653B19FB3D /* UBAppDelegate.m in Sources */,
 				9AA213E9F13EF64A08DDFB58 /* UBApplication.m in Sources */,
@@ -433,6 +446,7 @@
 				3F7EF7F28FA0952D3299BA80 /* UBWindow.m in Sources */,
 				B99E66D41A621EEB1164535E /* UBWindowGroup.m in Sources */,
 				5571D8192623A5705877CDD9 /* UBWindowsController.m in Sources */,
+				666C883CC1763C6DC891F02A /* WidgetServer.swift in Sources */,
 				969D7201C4824C739FB7F447 /* WidgetWatcher.swift in Sources */,
 				4C6669B3A7C1C7BA885EB7E9 /* WidgetWebView.swift in Sources */,
 				1A7BB5BB1FA9EF3CABDBA713 /* WidgetWebViewController.swift in Sources */,
@@ -446,8 +460,10 @@
 			files = (
 				DBD6B01FE95F55C273549D87 /* CommandRunnerTests.swift in Sources */,
 				A83551CCA6C493254227607F /* GeolocationTests.swift in Sources */,
+				D63BC67EC568C9424B238BA4 /* JSXTransformerTests.swift in Sources */,
 				CC5E53A53C4A049F02E74735 /* SwiftTests.swift in Sources */,
 				6803B60648C3FC39A5723F9D /* UebersichtTests.m in Sources */,
+				A3673F2AB55E48DD0F8B6A10 /* WidgetServerTests.swift in Sources */,
 				DC189D9E43D5A85BCA2F3949 /* WidgetWatcherTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
