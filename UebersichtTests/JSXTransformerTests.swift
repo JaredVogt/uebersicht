@@ -7,11 +7,16 @@ struct JSXTransformerTests {
 
     @Test("resolveBinary throws a clear error when esbuild is nowhere")
     func missingEsbuild() {
-        // Pass a bogus explicit path, clear PATH so system lookup fails, and
-        // verify we get the right error. We can't easily stub Bundle.main,
-        // so this test runs only when no ambient esbuild is on PATH — it
-        // early-returns otherwise rather than pretending to pass.
-        if JSXTransformer.findOnPath("esbuild") != nil { return }
+        // Skip when the test host can resolve *any* esbuild binary — either on
+        // PATH or bundled at `Resources/bin/esbuild`. The test host is the app
+        // itself, so the shipping bundled esbuild will normally be picked up
+        // and this test's negative case is unreachable in that environment.
+        let hasBundled = Bundle.main.url(
+            forResource: "esbuild",
+            withExtension: nil,
+            subdirectory: "bin"
+        ) != nil
+        if hasBundled || JSXTransformer.findOnPath("esbuild") != nil { return }
 
         #expect(throws: JSXTransformer.Failure.esbuildNotFound) {
             _ = try JSXTransformer.resolveBinary(

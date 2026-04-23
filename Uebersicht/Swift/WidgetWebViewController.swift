@@ -108,15 +108,45 @@ public final class WidgetWebViewController: NSObject {
             ))
         }
 
-        // Legacy widget compat: `process.argv[0]` used to point at localnode.
-        if let nodePath = Bundle.main.path(forResource: "localnode", ofType: nil) {
-            let escaped = nodePath.replacingOccurrences(of: " ", with: #"\\ "#)
-            controller.addUserScript(WKUserScript(
-                source: "process = {argv: ['\(escaped)']};",
-                injectionTime: .atDocumentStart,
-                forMainFrameOnly: true
-            ))
-        }
+        // Console bridge: forward browser console.{log,warn,error} + uncaught
+        // errors to NSLog so headless sessions can see JS runtime state
+        // without attaching Safari's Web Inspector.
+        controller.add(ConsoleMessageHandler(), name: "ubConsole")
+        controller.addUserScript(WKUserScript(
+            source: """
+            (function(){
+              function fwd(level, args) {
+                try {
+                  window.webkit.messageHandlers.ubConsole.postMessage({
+                    level: level,
+                    msg: Array.from(args).map(function(a){
+                      try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                      catch(e) { return String(a); }
+                    }).join(' ')
+                  });
+                } catch(_) {}
+              }
+              ['log','warn','error','info'].forEach(function(k){
+                var orig = console[k].bind(console);
+                console[k] = function(){ fwd(k, arguments); orig.apply(null, arguments); };
+              });
+              window.addEventListener('error', function(e){
+                fwd('error', ['uncaught', e.message, 'at', e.filename+':'+e.lineno+':'+e.colno]);
+              });
+              window.addEventListener('unhandledrejection', function(e){
+                var r = e.reason;
+                var detail;
+                if (r && r.stack) detail = r.message + '\\n' + r.stack;
+                else if (r && r.message) detail = r.message;
+                else if (r && r.type) detail = 'event:' + r.type;
+                else { try { detail = JSON.stringify(r); } catch(_){ detail = String(r); } }
+                fwd('error', ['unhandled rejection:', detail]);
+              });
+            })();
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
 
         // `uebersicht` channel: widget mouse enter/leave.
         controller.add(UebersichtMessageHandler(), name: "uebersicht")
@@ -176,6 +206,24 @@ extension WidgetWebViewController: WKNavigationDelegate {
         Task { [weak self] in
             try? await Task.sleep(for: .seconds(5))
             self?.load(url)
+        }
+    }
+}
+
+/// Forwards `console.log`/`console.error`/uncaught errors from the WebView
+/// into `NSLog` so we can diagnose rendering issues without attaching a
+/// Web Inspector. Installed by the user script in `buildConfig()`.
+@MainActor
+final class ConsoleMessageHandler: NSObject, WKScriptMessageHandler {
+    nonisolated func userContentController(
+        _ controller: WKUserContentController,
+        didReceive message: WKScriptMessage
+    ) {
+        MainActor.assumeIsolated {
+            guard let body = message.body as? [String: Any] else { return }
+            let level = body["level"] as? String ?? "log"
+            let msg = body["msg"] as? String ?? ""
+            NSLog("[webview %@] %@", level, msg)
         }
     }
 }

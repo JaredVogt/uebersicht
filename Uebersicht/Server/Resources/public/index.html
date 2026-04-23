@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Uebersicht</title>
+    <base href="/" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="stylesheet" type="text/css" href="userMain.css" />
+
+    <!-- Widgets `import { React, css, styled } from 'uebersicht'`. The
+         importmap routes that bare specifier to our single bundled module,
+         which ships preact + emotion inside so widgets don't need to. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "uebersicht": "/uebersicht.js"
+        }
+      }
+    </script>
+
+    <script type="module" src="client.js"></script>
+  </head>
+  <body>
+    <div id="uebersicht"></div>
+  </body>
+</html>

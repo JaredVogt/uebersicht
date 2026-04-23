@@ -1,0 +1,12 @@
+{
+  "name": "uebersicht-client",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Browser-side runtime for Uebersicht. Bundled by esbuild at build time.",
+  "dependencies": {
+    "preact": "10.24.3",
+    "@emotion/css": "11.13.4",
+    "@emotion/styled": "11.13.5"
+  }
+}

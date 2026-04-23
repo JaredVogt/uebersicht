@@ -34,9 +34,26 @@ public final class WidgetServer: @unchecked Sendable {
     private var listener: NWListener?
     private let config: Config
     private let queue = DispatchQueue(label: "uebersicht.widget-server")
+    // Keeps each in-flight ConnectionHandler alive until it removes itself.
+    // Without this, the handler (an ordinary class) deallocates as soon as
+    // `newConnectionHandler` returns and every request stalls.
+    private var handlers: Set<HandlerBox> = []
+    private let handlersLock = NSLock()
 
     public init(config: Config) {
         self.config = config
+    }
+
+    fileprivate func retain(_ handler: ConnectionHandler) {
+        handlersLock.lock()
+        handlers.insert(HandlerBox(handler))
+        handlersLock.unlock()
+    }
+
+    fileprivate func release(_ handler: ConnectionHandler) {
+        handlersLock.lock()
+        handlers.remove(HandlerBox(handler))
+        handlersLock.unlock()
     }
 
     public func start() throws {
@@ -69,8 +86,15 @@ public final class WidgetServer: @unchecked Sendable {
         let listener = try NWListener(using: params, on: NWEndpoint.Port(rawValue: port)!)
         self.listener = listener
 
-        listener.newConnectionHandler = { [config, queue] connection in
-            let handler = ConnectionHandler(connection: connection, config: config, queue: queue)
+        listener.newConnectionHandler = { [weak self, config, queue] connection in
+            guard let self else { return }
+            let handler = ConnectionHandler(
+                connection: connection,
+                config: config,
+                queue: queue,
+                onFinish: { [weak self] h in self?.release(h) }
+            )
+            self.retain(handler)
             handler.begin()
         }
         listener.stateUpdateHandler = { state in
@@ -235,18 +259,36 @@ public final class WebSocketConnection: @unchecked Sendable {
 
 // MARK: - Per-connection handler
 
+/// Identity-based wrapper so the server can track live handlers in a Set.
+private struct HandlerBox: Hashable {
+    let handler: ConnectionHandler
+    init(_ h: ConnectionHandler) { self.handler = h }
+    static func == (lhs: HandlerBox, rhs: HandlerBox) -> Bool { lhs.handler === rhs.handler }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(handler))
+    }
+}
+
 /// Accumulates bytes on a new NWConnection, parses the first HTTP request,
 /// and either serves it as HTTP or upgrades it to WebSocket.
 private final class ConnectionHandler: @unchecked Sendable {
     let connection: NWConnection
     let config: WidgetServer.Config
     let queue: DispatchQueue
+    let onFinish: @Sendable (ConnectionHandler) -> Void
     var buffer = Data()
+    var finished = false
 
-    init(connection: NWConnection, config: WidgetServer.Config, queue: DispatchQueue) {
+    init(
+        connection: NWConnection,
+        config: WidgetServer.Config,
+        queue: DispatchQueue,
+        onFinish: @escaping @Sendable (ConnectionHandler) -> Void
+    ) {
         self.connection = connection
         self.config = config
         self.queue = queue
+        self.onFinish = onFinish
     }
 
     func begin() {
@@ -254,19 +296,26 @@ private final class ConnectionHandler: @unchecked Sendable {
         readMore()
     }
 
+    private func finishHTTP() {
+        guard !finished else { return }
+        finished = true
+        connection.cancel()
+        onFinish(self)
+    }
+
     private func readMore() {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             guard let self else { return }
             if let error {
                 NSLog("HTTP read error: %@", String(describing: error))
-                self.connection.cancel()
+                self.finishHTTP()
                 return
             }
             if let data { self.buffer.append(data) }
             if let request = HTTPParser.parse(self.buffer) {
                 self.handle(request: request)
             } else if isComplete {
-                self.connection.cancel()
+                self.finishHTTP()
             } else {
                 self.readMore()
             }
@@ -277,11 +326,13 @@ private final class ConnectionHandler: @unchecked Sendable {
         if let upgrade = request.header("Upgrade"), upgrade.lowercased() == "websocket" {
             upgradeToWebSocket(request)
         } else {
-            Task { [config = self.config, connection = self.connection] in
+            Task { [weak self, config = self.config, connection = self.connection] in
                 let response = await config.router(request)
                 connection.send(
                     content: HTTPParser.serialize(response),
-                    completion: .contentProcessed { _ in connection.cancel() }
+                    completion: .contentProcessed { _ in
+                        self?.finishHTTP()
+                    }
                 )
             }
         }
@@ -292,17 +343,23 @@ private final class ConnectionHandler: @unchecked Sendable {
             let response = HTTPResponse(status: 400, body: Data("bad WS upgrade".utf8))
             connection.send(
                 content: HTTPParser.serialize(response),
-                completion: .contentProcessed { [weak self] _ in self?.connection.cancel() }
+                completion: .contentProcessed { [weak self] _ in self?.finishHTTP() }
             )
             return
         }
         let handshake = WebSocketFrame.handshakeResponse(forKey: key)
         connection.send(content: handshake, completion: .contentProcessed { [weak self] _ in
             guard let self else { return }
+            // Transition ownership: WebSocketConnection now owns the NWConnection
+            // for its lifetime; the HTTP handler's job is done.
             let ws = WebSocketConnection(connection: self.connection)
             Task { [config = self.config] in
                 await config.onWebSocket(ws)
             }
+            // Don't cancel the NWConnection here — WebSocketConnection still
+            // uses it. Just release this handler from the server's retain set.
+            self.finished = true
+            self.onFinish(self)
         })
     }
 }

@@ -62,9 +62,11 @@ targets:
           - "Uebersicht.entitlements"
           - "UBWebSocket.h"
           - "UBWebSocket.m"
-          # `UBAppDelegate.m` #imports `UBPreferencesController.m` directly,
-          # so don't compile it a second time.
-          - "UBPreferencesController.m"
+          # Bundled helpers + client assets — added separately as Resources.
+          - "Server/Resources"
+          # Browser-side client source — bundled by scripts/build-client.sh
+          # into Server/Resources/public/, added via the Resources group.
+          - "Client"
       - path: Uebersicht/GettingStarted.jsx
         type: file
         buildPhase: resources
@@ -77,23 +79,11 @@ targets:
       - path: Uebersicht/Uebersicht.sdef
         type: file
         buildPhase: resources
-      - path: server/release/public
+      - path: Uebersicht/Server/Resources/public
         type: folder
         buildPhase: resources
-      - path: server/release/node_modules
+      - path: Uebersicht/Server/Resources/bin
         type: folder
-        buildPhase: resources
-      - path: server/release/localnode
-        type: file
-        buildPhase: resources
-      - path: server/release/server.js
-        type: file
-        buildPhase: resources
-      - path: server/release/node-arm64
-        type: file
-        buildPhase: resources
-      - path: server/release/node-x64
-        type: file
         buildPhase: resources
     dependencies:
       - package: Sparkle
@@ -107,6 +97,26 @@ targets:
         LD_RUNPATH_SEARCH_PATHS:
           - "@executable_path/../Frameworks"
         CODE_SIGN_STYLE: Automatic
+    preBuildScripts:
+      - name: Fetch esbuild universal binary
+        runOnlyWhenInstalling: false
+        shell: /bin/bash
+        inputFiles:
+          - $(SRCROOT)/scripts/fetch-esbuild.sh
+        outputFiles:
+          - $(SRCROOT)/Uebersicht/Server/Resources/bin/esbuild
+        script: |
+          "$SRCROOT/scripts/fetch-esbuild.sh"
+      - name: Build client bundle
+        runOnlyWhenInstalling: false
+        shell: /bin/bash
+        # No inputFiles/outputFiles — Xcode's dependency tracking at this
+        # granularity would need every JS file enumerated, which is fragile
+        # as the client grows. build-client.sh is fast (<1s no-op) so always
+        # running it is cheap.
+        alwaysOutOfDate: true
+        script: |
+          "$SRCROOT/scripts/build-client.sh"
     postBuildScripts:
       - name: Re-sign bundled helpers
         runOnlyWhenInstalling: false
@@ -130,9 +140,7 @@ targets:
           }
 
           sign_if_exists "$BUILD/$FRAMEWORKS_FOLDER_PATH/Sparkle.framework" no
-          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node-arm64" yes
-          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node-x64" yes
-          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/node_modules/fsevents/fsevents.node" no
+          sign_if_exists "$BUILD/$CONTENTS_FOLDER_PATH/Resources/bin/esbuild" yes
 
   UebersichtTests:
     type: bundle.unit-test

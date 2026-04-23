@@ -43,11 +43,13 @@
 //    XCTAssertEqual(windowFrame.origin.y, screenFrame.origin.y);
 //}
 
-- (void)testServerTask
+- (void)testServerBridgePresent
 {
-    NSTask* serverTask = [deletgate valueForKey:@"widgetServer"];
-    XCTAssertNotNil(serverTask);
-    XCTAssert([serverTask isRunning]);
+    // The Node NSTask is gone; the app now drives an in-process
+    // `UBWidgetServerBridge`. We only assert presence — bound-port testing
+    // belongs in the Swift server tests where we can await the actor.
+    id bridge = [deletgate valueForKey:@"widgetServer"];
+    XCTAssertNotNil(bridge);
 }
 
 - (void)testMenuItem

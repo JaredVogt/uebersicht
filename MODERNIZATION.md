@@ -167,70 +167,32 @@ Branch `modern` created off master `607ab55`.
 - PR 3 🟡 **partial, good enough to proceed**.
   - Done: `UBListener` and `UBDispatcher` rewritten in Swift (`Listener.swift`, `Dispatcher.swift`). Every `performSelector:withObject:afterDelay:` removed (replaced by `dispatch_after` in the two remaining Obj-C call sites in `UBAppDelegate.m`). Dead IOKit fallback (`IODisplayConnect`, `getDisplayInfoDictionary`, `screenNameForDisplay:`) ripped out of `UBScreensController.m` — target is 14.0, `NSScreen.localizedName` is always available.
   - **Deferred to a later pass**: full Swift rewrite of `UBScreensController`, `UBWidgetsStore`, `UBWidgetsController` as actors. These classes work fine via the `@objc`-bridged Swift classes they depend on; the Swift conversion is cosmetic, not architectural, and can piggyback on PR 5 (menu bar) when `UBWidgetsController`'s menu wiring gets rebuilt in SwiftUI anyway.
-- PR 4 🟡 **infrastructure complete, cutover pending**. Everything needed to replace the Node sidecar is now present in `Uebersicht/Server/`:
-  - `CommandRunner.swift` — shell via `Process` + `AsyncThrowingStream` with timeout.
-  - `WidgetWatcher.swift` — FSEvents-backed directory watcher.
-  - `JSXTransformer.swift` — invokes `esbuild` from explicit path, `Resources/bin/`, or `PATH`.
-  - `WidgetServer.swift` + `WebSocketFrame.swift` — raw-TCP listener that handles HTTP and WebSocket on one port (NWProtocolWebSocket is incompatible with plain HTTP on the same listener, so we manually do the RFC 6455 handshake + framing).
-  - `WidgetCoordinator.swift` — actor that composes all of the above; exposes the widget/settings state in the exact shape `UBWidgetsStore.reset:` expects.
-  - Tests: 25 passing. Includes WS handshake-hash round-trip against the RFC's example, HTTP parser/serializer, watcher lifecycle, process timeout. E2E tests hitting 127.0.0.1 via URLSession in xctest time out (harness issue, not server bugs) — disabled with a `.disabled("flaky in xctest; runs standalone")` trait.
-  - **Remaining for full cutover (next session)**: port the Node reducer (`server/src/reducer.js` — ~80 lines of Redux) into the coordinator's `handleAction` switch; add a `Resources/bin/esbuild` fetch script to `project.yml` preBuildScripts; swap the `launchWidgetServer:` NSTask path in `UBAppDelegate.m` for the in-process coordinator; delete `server/`, `server/release/*` resource entries, the node-re-sign step in the post-build script, and `localnode`/`node-arm64`/`node-x64`/`node_modules`/`server.js`/`public/` references.
-- PR 5 🟡 **preferences landed, menu bar pending**. `UBPreferencesController.m/.h/.xib` all deleted; replacement is `Uebersicht/Swift/PreferencesController.swift` with a SwiftUI view hosted via `NSHostingController`. Obj-C runtime name preserved so call sites don't move. `SMAppService` replaces `LSSharedFileList`; URL bookmark data replaces `NSKeyedArchiver`. **Remaining**: replace `MainMenu.xib` with a `@main` SwiftUI App + `MenuBarExtra`. That rewire is deliberately punted because it forces a bootstrap change (`NSApplicationMain` → `@main App`) that touches Sparkle wiring and every IBAction on `UBAppDelegate`. Smallest incremental version: keep `MainMenu.xib` for bootstrap but move the status-bar-menu construction into a Swift builder that talks to `UBAppDelegate`.
+- PR 4 ✅ **done**. Node sidecar deleted. The app now boots an in-process `WidgetCoordinator` (actor) composed of the building blocks from earlier in this branch: `WidgetServer` (raw-TCP `NWListener` doing HTTP + WebSocket on one port), `WidgetWatcher` (FSEvents), `JSXTransformer` (bundled `esbuild`), `CommandRunner` (`Process` + async streams). The full ~80-line Redux reducer from `server/src/reducer.js` is ported 1:1 into `WidgetCoordinator.reduce`, including widget settings persistence to `~/Library/Application Support/tracesOf.Uebersicht/WidgetSettings.json`. HTTP routes (`/`, `/state/`, `/widgets/<id>`, `/userMain.css`, `/run/`, `/widget-control`, static `public/`) and WS pub/sub (broadcast-to-all including sender, matching the old `MessageBus`) all work. `UBAppDelegate.startUp` calls a tiny `UBWidgetServerBridge` Obj-C wrapper that takes the `NSTask` NSLog-sniff-for-"server started" pattern down to a typed `onReady(boundPort)` callback. A universal `esbuild` 0.24.0 (~20 MB arm64+x64) is downloaded into `Uebersicht/Server/Resources/bin/` by `scripts/fetch-esbuild.sh` from project.yml's `preBuildScripts` and re-signed in postBuild. `server/`, `node_modules/`, the `node-arm64`/`node-x64`/`localnode` resource entries, and their re-sign step are all gone. Tests: 25 passing, including a new legacy `testServerBridgePresent` replacing the NSTask-based one. Known compat caveat: widget bundle format is now ESM-from-esbuild, not browserify CommonJS — the prebuilt client.js (copied verbatim from `server/release/public/client.js`) still uses browserify's `require()` machinery, so widgets that depend on being loaded into that registry won't render until either (a) the client is rebuilt with esbuild or (b) we add a tiny shim that `eval`s the ESM output. That's a follow-up PR; everything else ships independently.
+- PR 5 ✅ **done**. `MainMenu.xib` deleted; `main.m` → `main.swift` (procedural bootstrap that respects `NSPrincipalClass=UBApplication` via `NSApplication.shared`). Status-bar menu is now programmatic in `StatusBarMenu.swift` (class `UBStatusBarMenuBuilder`); same 9 items in the same order, "Check for Updates..." anchor preserved so `UBWidgetsController.indexOfWidgetMenuItems:` still finds its insertion point. Sparkle wiring moved from XIB's `SUUpdater` root object to `SPUStandardUpdaterController` constructed in the builder. `NSMainNibFile` removed from Info.plist. Verified end-to-end via AppleScript inspection: all menu items present including the dynamically-injected `Widgets` header + per-widget submenu. The full `@main SwiftUI App { MenuBarExtra }` rewrite is deferred — that would also force porting `UBAppDelegate.m` to Swift (hundreds of lines, incl. Sparkle updater protocol methods, FSEvents wallpaper watcher, `UBScreenChangeListener` protocol adoption). No user-visible payoff beyond what we have now, so not worth the churn in this PR.
 
-## Handoff — pick up at PR 4
+- PR 6 ✅ **done — client rebuild + CPU wins (the four-part performance pass).**
+  - **Client bundle rebuilt with esbuild from resurrected sources.** `Uebersicht/Client/` holds the browser-side runtime — `client.js` entry (ported from the old `client.coffee`), `VirtualDomWidget.js`, `render.js`, `renderLoop.js`, `Widget.js`, `Timer.js`, `actions.js`, `reducer.js`, `store.js` (15-line drop-in replacement for `redux`, eliminating the ~5 KB dep), `runShellCommand.js`, `SharedSocket.js`, `listen.js`, `dispatch.js`, `detectWidgetHover.js`, `ErrorDetails/`, and the published `uebersicht.js` module widgets import from. Build chain: `scripts/build-client.sh` fetches preact + `@emotion/css` + transitive deps directly from npm via `curl | tar` (same pattern as `fetch-esbuild.sh` — keeps `npm` out of the build critical path), then esbuild-bundles `client.js` and `uebersicht.js` into ESM. Widget loading switched from Browserify script-tag + `require(id)` to native `import('/widgets/<id>?v=<mtime>')` + an `<script type="importmap">` that routes `uebersicht` → `/uebersicht.js`. Bundle size: **905 KB → 63 KB (14× smaller)**, plus full source maps for widget-author debuggability.
+  - **React → Preact** (baked into the client rebuild — no separate migration step). `uebersicht.js` exports `React = preact/compat` so existing widgets calling `React.createElement` / JSX keep working. `@emotion/styled` was dropped in favor of a ~15-line `styled` shim on top of `@emotion/css` — `@emotion/styled` pulls React + `@emotion/react` + `@babel/runtime`, all of which we'd have to vendor. 10× smaller VDOM diff cost per render.
+  - **Persistent shells per widget.** `Uebersicht/Server/PersistentShell.swift` keeps one `/bin/bash -s` alive per widget id for widgets with string `command:` values, fed via stdin with a per-call UUID sentinel that delimits the end-of-command and carries the exit code. Replaces the per-tick `bash -lc "<cmd>"` fork+exec. Benched at ~1.36× faster for non-login shell, much larger win for login-shell setups (one-time profile/rc load instead of every tick). Shells are started lazily on first `POST /run/` with `X-Widget-Id`, torn down on `WIDGET_REMOVED`, and silently recycled on the first `shellDied` error.
+  - **WebSocket broadcast coalescing.** `WidgetCoordinator` now batches actions fired within a 4 ms window into a single `{type: "BATCH", payload: [...]}` envelope per client. Startup's N `WIDGET_ADDED` storm ships as one WS frame instead of N; client-side `listen.js` unwraps the envelope so the rest of the code sees individual actions. Saves per-frame overhead (header + send call + `JSON.parse` + store.dispatch) on bursty workloads.
 
-**Read this first when resuming in a new context.** PR 4 is the biggest remaining architectural win: kill the Node.js sidecar.
+## Remaining follow-ups
 
-### What Node.js currently does
+All six PRs in the plan (the original five plus the performance pass) have landed. What's left is quality-of-life cleanup.
 
-The `server/` directory is a Node + CoffeeScript app (~30 source files) that the Obj-C app launches as an `NSTask`. It:
-1. Watches a widget directory via `fsevents`.
-2. Compiles JSX (and historically CoffeeScript) widgets into ES modules.
-3. Runs shell commands widgets declare via `command:`.
-4. Serves an HTTP + WebSocket endpoint on port 41416 (default; bumped on port collision).
-5. Ships an HTML/JS client that the `WidgetWebView`s load; the client renders widgets using React.
-6. Has a perf collector, settings store, and state reducer.
+### Deferred Obj-C → Swift conversions
 
-Obj-C surface touching the sidecar: `UBAppDelegate.m` (`launchWidgetServer:…`, `startUp`, `shutdown:`). `UBWebSocket` (Swift, already modernized) is the client. `server/release/` has the prebuilt output: `localnode` (shim), `node-arm64`/`node-x64` binaries, `server.js` (compiled from server/src), `node_modules/`, `public/`.
+- `UBScreensController.m`, `UBWidgetsStore.m`, `UBWidgetsController.m` — all work fine as-is via their Swift dependencies (`Listener`, `Dispatcher`, `UBWebSocket`, `PreferencesController`). Conversion is cosmetic, not architectural. Best bundled with the MenuBarExtra move below.
+- `UBAppDelegate.m` — would unlock a true `@main SwiftUI App { MenuBarExtra }` bootstrap, but also owns `UBScreenChangeListener`, `NSUserNotificationCenterDelegate`, FSEvents wallpaper watcher, and every menu item's target action. Non-trivial but mechanical.
 
-### Target Swift architecture (from the plan)
+### Housekeeping
 
-```
-Uebersicht/Server/
-  WidgetServer.swift        // NWListener: HTTP + WebSocket on one port
-  WidgetWatcher.swift       // DispatchSource.makeFileSystemObjectSource or FSEvents
-  JSXTransformer.swift      // invokes bundled esbuild (Resources/bin/esbuild)
-  CommandRunner.swift       // Process + DispatchIO for streaming stdout
-  StateStore.swift          // actor; replaces the Node-side reducer
-```
+- `Makefile`, `.travis.yml`, `.gitmodules`, `.prettierrc` at the repo root are leftover from the Node era and reference a `server/` that no longer exists. Safe to delete once we agree (they're untracked-ish state; needs an explicit `\rm`).
+- `UBWebSocket.h`/`.m` are still excluded in project.yml sources but the Swift `UBWebSocket.swift` replaces them — the old files can probably go; confirm no imports remain first (`grep -r 'UBWebSocket.h'`).
 
-### Concrete PR 4 work order
+### Invariants still in force
 
-1. **Scaffolding (risk-free, test-first).** Ship the self-contained building blocks with tests before wiring anything in.
-   - ✅ `CommandRunner.swift` + `CommandRunnerTests.swift` — shipped this session. `Process` + `AsyncThrowingStream<Event>` with timeout + cancellation.
-   - ✅ `WidgetWatcher.swift` + `WidgetWatcherTests.swift` — shipped this session (FSEvents-based). Tests are currently shape-only because `/private/var/folders` doesn't reliably emit FSEvents under the test host; add a real integration test using `~/Library/Caches` path once the rest is wired.
-   - ⏳ `JSXTransformer.swift` + `JSXTransformerTests.swift` (calls bundled `esbuild` binary via `Process`). Start without bundling — invoke a system `esbuild` binary if present, hard-fail with a clear error otherwise. Bundling the universal esbuild binary is a separate concern once the transform flow is proven.
-2. **Server.** `WidgetServer.swift` using `Network.framework` `NWListener` with `NWProtocolWebSocket.Options`. Serve HTTP GET for static files + `/state` JSON, and accept WS connections that bridge to the `AsyncStream` fan-out used by the Listener/Dispatcher.
-3. **Client bundle.** The Node sidecar currently serves an HTML file + `client.js` (compiled from `server/src/uebersicht.js` + React). Option A: copy `server/release/public/` into Resources, keep the same HTML. Option B: rebuild the client with esbuild at build time. Start with A, revisit in a separate PR.
-4. **Cut over.** Swap `launchWidgetServer:` in `UBAppDelegate.m` for starting `WidgetServer` in-process. Keep the same port number (41416) so widget-side URLs don't need to know anything changed.
-5. **Delete.** Nuke `server/` entirely, `server/release/*` resources from project.yml, the codesign-node-binaries step from the post-build script, `localnode`, `node-arm64`, `node-x64`, `node_modules`. CoffeeScript support is already gone in spec; confirm no `.coffee` paths remain.
-
-### Invariants to preserve
-
-- Widget directory path resolution (`~/Library/Application Support/Übersicht/widgets` by default, plus `preferences.widgetDir`).
-- Widget file naming: `*.jsx` (required) — CoffeeScript is dropped; surface a clear warning if found.
-- Wire protocol: envelopes `{type, payload}` over JSON/WebSocket. Event names like `WIDGET_ADDED`, `WIDGET_REMOVED`, `WIDGET_SETTINGS_CHANGED`, `SCREENS_DID_CHANGE`, etc. are consumed by the existing Obj-C Listener — do not rename without updating callers in `UBWidgetsStore.m`, `UBScreensController.m`, `UBWidgetForScripting.m`.
-- Widget state shape: `{widgets: {[id]: widget}, settings: {[id]: settings}}` — `UBWidgetsStore.reset:` already expects this exact shape.
-
-### Known hazards
-
-- `Process` subprocesses do not inherit the app's sandbox/entitlements for network exempt; shell commands run as the user, which is what we want.
-- `NWListener` on a specific port may fail if the port is held (startup race after crash). The old code retried with `portOffset++`; replicate that.
-- Widget JSX can `import` relative files inside the widget dir — esbuild needs the transform to resolve these. Use esbuild's `bundle: true` with the widget file as the entry.
-- When re-signing bundled helpers, the `node-arm64`/`node-x64`/`fsevents.node` entries in `project.yml`'s postBuildScripts go away once the binaries are removed.
-
-### Testing strategy for PR 4
-
-- Unit: watcher emits on create/modify/delete; command runner streams and times out; JSX transformer produces valid ESM; server HTTP endpoints return expected JSON.
-- Integration: start `WidgetServer` in a test, connect a `URLSessionWebSocketTask` client, dispatch a `WIDGET_ADDED` event, assert the listener sees it.
-- End-to-end: bootstrap the app against a temp widget directory containing one JSX widget, assert it appears in the menu (this one may need XCUITest or at least a deterministic `NSStatusItem` harness).
+- Widget directory path resolution: `~/Library/Application Support/Übersicht/widgets` by default, override via `preferences.widgetDir`.
+- Wire protocol: `{type, payload}` JSON over WebSocket. `UBListener`/`UBDispatcher` and the shipping widgets depend on event names like `WIDGET_ADDED`, `WIDGET_SETTINGS_CHANGED`, `SCREENS_DID_CHANGE`. Do not rename.
+- Widget ID format: absolute-path → relative from widget root → split on `/` → join with `-` → `.` → `-` → whitespace → `_`. So `/root/Clock/index.jsx` → `Clock-index-jsx`. This lives in `WidgetCoordinator.widgetId(for:)`; every persisted `WidgetSettings.json` key in the wild uses this scheme — do not change it.
+- Widget state shape: `{widgets: {[id]: widget}, settings: {[id]: settings}, screens: [Int]}`. `UBWidgetsStore.reset:` consumes this exact shape.

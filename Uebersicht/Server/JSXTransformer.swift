@@ -28,6 +28,16 @@ public struct JSXTransformer: Sendable {
         public var sourceMap: Bool = true
         public var target: String = "safari16"
         public var format: String = "esm"
+        /// Matches the old Babel `pragma: 'html'` setup where widgets use
+        /// `html(...)` (an alias for `React.createElement`) rather than the
+        /// automatic JSX runtime. Avoids needing to resolve `react/jsx-runtime`
+        /// in the bundle.
+        public var jsxFactory: String = "html"
+        public var jsxFragment: String = "Fragment"
+        /// `uebersicht` is provided by the host client (exports run/request/
+        /// css/styled/React). Widgets must import from `uebersicht`; direct
+        /// `import React from 'react'` is no longer supported — the client
+        /// bundle doesn't expose `react` as its own module anymore.
         public var externalModules: [String] = ["uebersicht"]
 
         public init(
@@ -35,13 +45,17 @@ public struct JSXTransformer: Sendable {
             sourceMap: Bool = true,
             target: String = "safari16",
             format: String = "esm",
-            externalModules: [String] = ["uebersicht"]
+            jsxFactory: String = "html",
+            jsxFragment: String = "Fragment",
+            externalModules: [String]? = nil
         ) {
             self.binaryPath = binaryPath
             self.sourceMap = sourceMap
             self.target = target
             self.format = format
-            self.externalModules = externalModules
+            self.jsxFactory = jsxFactory
+            self.jsxFragment = jsxFragment
+            if let externalModules { self.externalModules = externalModules }
         }
     }
 
@@ -63,7 +77,9 @@ public struct JSXTransformer: Sendable {
             "--target=\(options.target)",
             "--loader:.jsx=jsx",
             "--loader:.js=jsx",
-            "--jsx=automatic",
+            "--jsx=transform",
+            "--jsx-factory=\(options.jsxFactory)",
+            "--jsx-fragment=\(options.jsxFragment)",
             sourceURL.path
         ]
         if options.sourceMap { args.append("--sourcemap=inline") }

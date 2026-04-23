@@ -22,31 +22,27 @@ int const PORT = 41416;
 
 @implementation UBAppDelegate {
     NSStatusItem* statusBarItem;
-    NSTask* widgetServer;
+    UBWidgetServerBridge* widgetServer;
     UBPreferencesController* preferences;
     UBScreensController* screensController;
     UBWindowsController* windowsController;
     BOOL shuttingDown;
     BOOL keepServerAlive;
-    int portOffset;
     UBWidgetsStore* widgetsStore;
     UBWidgetsController* widgetsController;
     BOOL needsRefresh;
+    UInt16 boundPort;
+    UBStatusBarMenuBuilder* statusBarMenuBuilder;
 }
-
-@synthesize statusBarMenu;
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
     needsRefresh = YES;
-    statusBarItem = [self addStatusItemToMenu: statusBarMenu];
+    statusBarMenuBuilder = [UBStatusBarMenuBuilder buildForDelegate:self];
+    self.statusBarMenu = statusBarMenuBuilder.menu;
+    statusBarItem = [self addStatusItemToMenu: self.statusBarMenu];
     preferences = [[UBPreferencesController alloc] init];
 
-    // NSTask doesn't terminate when xcode stop is pressed. Other ways of
-    // spawning the server, like system() or popen() have the same problem.
-    // So, hit em with a hammer :(
-    system("killall -m node-");
-    
     widgetsStore = [[UBWidgetsStore alloc] init];
 
     screensController = [[UBScreensController alloc]
@@ -56,7 +52,7 @@ int const PORT = 41416;
     windowsController = [[UBWindowsController alloc] init];
     
     widgetsController = [[UBWidgetsController alloc]
-        initWithMenu: statusBarMenu
+        initWithMenu: self.statusBarMenu
         widgets: widgetsStore
         screens: screensController
         preferences: preferences
@@ -101,67 +97,45 @@ int const PORT = 41416;
     ];
     
     // start server and load webview
-    portOffset = 0;
     [self startUp];
-    
-    [self listenToWallpaperChanges];
-}
 
-- (NSDictionary*)fetchState
-{
-    NSURL *urlPath = [[self serverUrl:@"http"] URLByAppendingPathComponent: @"state/"];
-    NSData *jsonData = [NSData dataWithContentsOfURL:urlPath];
-    NSError *error = nil;
-    NSDictionary *dataDictionary = [NSJSONSerialization
-        JSONObjectWithData: jsonData
-        options: NSJSONReadingMutableContainers
-        error: &error
-    ];
-    if (error) NSLog(@"%@", error);
-    return dataDictionary;
+    [self listenToWallpaperChanges];
 }
 
 - (void)startUp
 {
+    NSLog(@"starting in-process widget server");
 
-    NSLog(@"starting server task");
-    
-    void (^handleData)(NSString*) = ^(NSString* output) {
-        // note that these might be called several times
-        if ([output rangeOfString:@"server started"].location != NSNotFound) {
-            [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
-            [self->widgetsStore reset: [self fetchState]];
-            // this will trigger a render
-            [self->screensController syncScreens];
-
-        } else if ([output rangeOfString:@"EADDRINUSE"].location != NSNotFound) {
-            self->portOffset++;
-        }
-    };
-
-    void (^handleExit)(NSTask*) = ^(NSTask* theTask) {
-        if (!self->shuttingDown) {
-            [self shutdown];
-        }
-        if (self->portOffset >= 20) {
-            self->keepServerAlive = NO;
-            NSLog(@"couldn't find an open port. Giving up...");
-        }
-        if (self->keepServerAlive) {
-            dispatch_after(
-                dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)),
-                dispatch_get_main_queue(),
-                ^{ [self startUp]; }
-            );
-        }
-    };
-    
     shuttingDown = NO;
     keepServerAlive = YES;
-    widgetServer = [self
-        launchWidgetServer: [preferences.widgetDir path]
-        onData: handleData
-        onExit: handleExit
+    widgetServer = [[UBWidgetServerBridge alloc]
+        initWithWidgetDirectory: preferences.widgetDir
+        settingsDirectory: [self getPreferencesDir]
+        loginShell: [[NSUserDefaults standardUserDefaults] boolForKey:@"loginShell"]
+    ];
+
+    [widgetServer
+        startOnReady: ^(UInt16 port) {
+            self->boundPort = port;
+            [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
+            [self->widgetServer fetchStateWithCompletion:^(NSDictionary* state) {
+                [self->widgetsStore reset:state];
+                [self->screensController syncScreens];
+            }];
+        }
+        onExit: ^(NSString* _Nullable reason) {
+            if (reason) NSLog(@"widget server startup failed: %@", reason);
+            if (!self->shuttingDown) {
+                [self shutdown];
+            }
+            if (self->keepServerAlive) {
+                dispatch_after(
+                    dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)),
+                    dispatch_get_main_queue(),
+                    ^{ [self startUp]; }
+                );
+            }
+        }
     ];
 }
 
@@ -175,9 +149,8 @@ int const PORT = 41416;
     keepServerAlive = keepAlive;
     [windowsController closeAll];
     [[UBWebSocket sharedSocket] close];
-    if (widgetServer){
-        [widgetServer terminate];
-    }
+    [widgetServer stop];
+    widgetServer = nil;
 }
 
 - (void)shutdown
@@ -188,9 +161,8 @@ int const PORT = 41416;
 - (void)applicationWillTerminate:(NSNotification *)notification
 {
     keepServerAlive = NO;
-    [widgetServer terminate];
+    [widgetServer stop];
     [[NSStatusBar systemStatusBar] removeStatusItem:statusBarItem];
-    
 }
 
 - (NSStatusItem*)addStatusItemToMenu:(NSMenu*)aMenu
@@ -209,54 +181,6 @@ int const PORT = 41416;
     return item;
 }
 
-- (NSTask*)launchWidgetServer:(NSString*)widgetPath
-                       onData:(void (^)(NSString*))dataHandler
-                       onExit:(void (^)(NSTask*))exitHandler
-{
-    NSBundle* bundle     = [NSBundle mainBundle];
-    NSString* nodePath   = [bundle pathForResource:@"localnode" ofType:nil];
-    NSString* serverPath = [bundle pathForResource:@"server" ofType:@"js"];
-    BOOL loginShell = [[NSUserDefaults standardUserDefaults]
-        boolForKey:@"loginShell"
-    ];
-
-    NSTask *task = [[NSTask alloc] init];
-
-    [task setStandardOutput:[NSPipe pipe]];
-    [task.standardOutput fileHandleForReading].readabilityHandler = ^(NSFileHandle *handle) {
-        NSData *output = [handle availableData];
-        NSString *outStr = [[NSString alloc]
-            initWithData:output
-            encoding:NSUTF8StringEncoding
-        ];
-        
-        NSLog(@"%@", outStr);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            dataHandler(outStr);
-        });
-    };
-    
-    task.terminationHandler = ^(NSTask *theTask) {
-        [theTask.standardOutput fileHandleForReading].readabilityHandler = nil;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            exitHandler(theTask);
-        });
-    };
-    
-    [task setLaunchPath:nodePath];
-    [task setArguments:@[
-        serverPath,
-        @"-d", widgetPath,
-        @"-p", [NSString stringWithFormat:@"%d", PORT + portOffset],
-        @"-s", [[self getPreferencesDir] path],
-        loginShell ? @"--login-shell" : @""
-    ]];
-    
-    [task launch];
-    return task;
-}
-
-
 - (NSURL*)getPreferencesDir
 {
     NSArray* urls = [[NSFileManager defaultManager]
@@ -272,10 +196,11 @@ int const PORT = 41416;
 
 - (NSURL*)serverUrl:(NSString*)protocol
 {
+    UInt16 port = boundPort ? boundPort : PORT;
     // trailing slash required for load policy in UBWindow
     return [NSURL
         URLWithString:[NSString
-            stringWithFormat:@"%@://127.0.0.1:%d/", protocol, PORT+portOffset
+            stringWithFormat:@"%@://127.0.0.1:%d/", protocol, port
         ]
     ];
 }
