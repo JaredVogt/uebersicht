@@ -10,7 +10,6 @@
 #import "UBWidgetsStore.h"
 #import "UBScreensController.h"
 #import "UBWidgetForScripting.h"
-#import "UBPreferencesController.h"
 #import "Uebersicht-Swift.h"
 
 @implementation UBWidgetsController {

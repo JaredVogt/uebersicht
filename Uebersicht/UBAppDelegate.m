@@ -12,7 +12,6 @@
 
 #import "UBAppDelegate.h"
 #import "UBWindow.h"
-#import "UBPreferencesController.m"
 #import "UBScreensController.h"
 #import "UBWidgetsController.h"
 #import "UBWidgetsStore.h"
@@ -41,9 +40,7 @@ int const PORT = 41416;
 {
     needsRefresh = YES;
     statusBarItem = [self addStatusItemToMenu: statusBarMenu];
-    preferences = [[UBPreferencesController alloc]
-        initWithWindowNibName:@"UBPreferencesController"
-    ];
+    preferences = [[UBPreferencesController alloc] init];
 
     // NSTask doesn't terminate when xcode stop is pressed. Other ways of
     // spawning the server, like system() or popen() have the same problem.

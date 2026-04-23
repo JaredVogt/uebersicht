@@ -21,6 +21,7 @@
 		52BD10EA65504983D26B511F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DF4C09202C032316A986AEDB /* InfoPlist.strings */; };
 		54DF515E298C083CC49A208A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DFA923298ED6C9046D7F5AC /* Images.xcassets */; };
 		5571D8192623A5705877CDD9 /* UBWindowsController.m in Sources */ = {isa = PBXBuildFile; fileRef = F9CC6F8D6498E59DA655B194 /* UBWindowsController.m */; };
+		560885483135E343F4F2DF92 /* PreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E1A3F7DE6FC37DFBF88AB69 /* PreferencesController.swift */; };
 		5EF20B68BA390A747C0192DF /* node_modules in Resources */ = {isa = PBXBuildFile; fileRef = DD5C9DCA2D9B391B16C9B40E /* node_modules */; };
 		666C883CC1763C6DC891F02A /* WidgetServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE3EF6F2257DF40A94AA6A1 /* WidgetServer.swift */; };
 		6803B60648C3FC39A5723F9D /* UebersichtTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F6A40861D2C003206E433F5 /* UebersichtTests.m */; };
@@ -35,7 +36,6 @@
 		84230492E51FF0ADD329A668 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = ABBBD94C4A4D2CAC659BD716 /* InfoPlist.strings */; };
 		87794EE3304AFD87037F9324 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BF637B4C38D37B782EF0EB62 /* main.m */; };
 		89E179C083B9D74D109039EB /* widget-status-hidden.png in Resources */ = {isa = PBXBuildFile; fileRef = 6E944ECE6EC5E094BE7CCFC3 /* widget-status-hidden.png */; };
-		8BD824BBCCFD6227DBEB1A9C /* UBPreferencesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 464017A37A2C692DA8488532 /* UBPreferencesController.xib */; };
 		8F7B6EE8F4292502B9D915AC /* Uebersicht.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 3C14667EABD24CF50FF1EFE7 /* Uebersicht.sdef */; };
 		940D6E487A2EBE3E5F11172D /* WebSocketFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CD7E17B021CFDD2A159B055 /* WebSocketFrame.swift */; };
 		94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D61D18C22BEC198926345AB1 /* Geolocation.swift */; };
@@ -94,9 +94,9 @@
 		2CDD9912443BDA3F13484599 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = Credits.rtf; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		3220AC642E1DAFB4BCC2343C /* node-arm64 */ = {isa = PBXFileReference; path = "node-arm64"; sourceTree = "<group>"; };
 		3C14667EABD24CF50FF1EFE7 /* Uebersicht.sdef */ = {isa = PBXFileReference; path = Uebersicht.sdef; sourceTree = "<group>"; };
+		3E1A3F7DE6FC37DFBF88AB69 /* PreferencesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesController.swift; sourceTree = "<group>"; };
 		3F6A40861D2C003206E433F5 /* UebersichtTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UebersichtTests.m; sourceTree = "<group>"; };
 		3FDDDB9C8679A4B966D6A206 /* GettingStarted.jsx */ = {isa = PBXFileReference; path = GettingStarted.jsx; sourceTree = "<group>"; };
-		464017A37A2C692DA8488532 /* UBPreferencesController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UBPreferencesController.xib; sourceTree = "<group>"; };
 		4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunnerTests.swift; sourceTree = "<group>"; };
 		4BD2A7D7B11C9A3945A29F6C /* UBRefreshCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRefreshCommand.h; sourceTree = "<group>"; };
 		56EE5759BEF6777F6BB54663 /* WidgetCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetCoordinator.swift; sourceTree = "<group>"; };
@@ -125,7 +125,6 @@
 		9C8B952C806D1DCC2CC78EA5 /* Uebersicht.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uebersicht.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D879CC852A8963EF7B1DA23 /* UBWidgetsStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetsStore.m; sourceTree = "<group>"; };
 		9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeolocationTests.swift; sourceTree = "<group>"; };
-		A2AA9636AA3EEBC32E7BE4FA /* UBPreferencesController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBPreferencesController.h; sourceTree = "<group>"; };
 		B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Listener.swift; sourceTree = "<group>"; };
 		B13BA020F7866DC72AAF63BC /* status-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "status-icon.png"; sourceTree = "<group>"; };
 		BF637B4C38D37B782EF0EB62 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -235,6 +234,7 @@
 				CC2D3406DC4096FD9C3745BA /* Dispatcher.swift */,
 				D61D18C22BEC198926345AB1 /* Geolocation.swift */,
 				B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */,
+				3E1A3F7DE6FC37DFBF88AB69 /* PreferencesController.swift */,
 				0B4B5DB4CB64442040C2B3C8 /* UBWebSocket.swift */,
 				1A75287675C7D0B30185DA23 /* WidgetWebView.swift */,
 				DDCCBCDFEE285B9285D084A8 /* WidgetWebViewController.swift */,
@@ -258,8 +258,6 @@
 				7486DCD22516307E0B834B24 /* UBAppDelegate.m */,
 				2119F80F74857F9D220A507E /* UBApplication.h */,
 				24B5E6A82C803692F56737FD /* UBApplication.m */,
-				A2AA9636AA3EEBC32E7BE4FA /* UBPreferencesController.h */,
-				464017A37A2C692DA8488532 /* UBPreferencesController.xib */,
 				4BD2A7D7B11C9A3945A29F6C /* UBRefreshCommand.h */,
 				236AA501FCD93396B80094B3 /* UBRefreshCommand.m */,
 				72F1B82A221913A64E43E5E0 /* UBReloadCommand.h */,
@@ -383,7 +381,6 @@
 				52BD10EA65504983D26B511F /* InfoPlist.strings in Resources */,
 				AC91D7BECC43C704015E513A /* MainMenu.xib in Resources */,
 				FC6E76EC0E02E338BAFB3B9A /* Perf.jsx in Resources */,
-				8BD824BBCCFD6227DBEB1A9C /* UBPreferencesController.xib in Resources */,
 				8F7B6EE8F4292502B9D915AC /* Uebersicht.sdef in Resources */,
 				82F2EF7F13582953018878D2 /* geolocation.js in Resources */,
 				0123826F30051E9CD5F81FA5 /* localnode in Resources */,
@@ -443,6 +440,7 @@
 				94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */,
 				06158D5DC62DB51CD2967EB2 /* JSXTransformer.swift in Sources */,
 				E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */,
+				560885483135E343F4F2DF92 /* PreferencesController.swift in Sources */,
 				F67A653B9C7062653B19FB3D /* UBAppDelegate.m in Sources */,
 				9AA213E9F13EF64A08DDFB58 /* UBApplication.m in Sources */,
 				7A8856865D460CB1A7BA0750 /* UBRefreshCommand.m in Sources */,
