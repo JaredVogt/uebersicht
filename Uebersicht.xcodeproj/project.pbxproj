@@ -34,6 +34,7 @@
 		8BD824BBCCFD6227DBEB1A9C /* UBPreferencesController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 464017A37A2C692DA8488532 /* UBPreferencesController.xib */; };
 		8F7B6EE8F4292502B9D915AC /* Uebersicht.sdef in Resources */ = {isa = PBXBuildFile; fileRef = 3C14667EABD24CF50FF1EFE7 /* Uebersicht.sdef */; };
 		94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D61D18C22BEC198926345AB1 /* Geolocation.swift */; };
+		969D7201C4824C739FB7F447 /* WidgetWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69871DBEF39C84FBF70EE64F /* WidgetWatcher.swift */; };
 		9AA213E9F13EF64A08DDFB58 /* UBApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 24B5E6A82C803692F56737FD /* UBApplication.m */; };
 		A83551CCA6C493254227607F /* GeolocationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */; };
 		A9A7AFE1622208D2360BE70A /* UBScreensController.m in Sources */ = {isa = PBXBuildFile; fileRef = C1576EA06930F9E9DC654DA7 /* UBScreensController.m */; };
@@ -48,8 +49,11 @@
 		CC5E53A53C4A049F02E74735 /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58097606BE214794762E968 /* SwiftTests.swift */; };
 		D556C6ACF5B91FC3AC22B2E6 /* UBReloadCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C51C0BE8BB0402C738729521 /* UBReloadCommand.m */; };
 		DB5899001AB3DBB18CF3D974 /* uebersicht-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 948143BD21A24D5D67200BA0 /* uebersicht-logo.png */; };
+		DBD6B01FE95F55C273549D87 /* CommandRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */; };
+		DC189D9E43D5A85BCA2F3949 /* WidgetWatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97902B92A1E10EE3A836FD2C /* WidgetWatcherTests.swift */; };
 		DFA0AA385B9CD741A0CBE94F /* UBWidgetsStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9D879CC852A8963EF7B1DA23 /* UBWidgetsStore.m */; };
 		E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12A6D6CF769BDDEF5AF70F5 /* Listener.swift */; };
+		EE2CD08C18E0D7CC35676F12 /* CommandRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DDDD017CF95BD0BE338C25 /* CommandRunner.swift */; };
 		F67A653B9C7062653B19FB3D /* UBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7486DCD22516307E0B834B24 /* UBAppDelegate.m */; };
 		FC6E76EC0E02E338BAFB3B9A /* Perf.jsx in Resources */ = {isa = PBXBuildFile; fileRef = 8976052859BF2DA38BE73FDE /* Perf.jsx */; };
 /* End PBXBuildFile section */
@@ -85,8 +89,10 @@
 		3F6A40861D2C003206E433F5 /* UebersichtTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UebersichtTests.m; sourceTree = "<group>"; };
 		3FDDDB9C8679A4B966D6A206 /* GettingStarted.jsx */ = {isa = PBXFileReference; path = GettingStarted.jsx; sourceTree = "<group>"; };
 		464017A37A2C692DA8488532 /* UBPreferencesController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = UBPreferencesController.xib; sourceTree = "<group>"; };
+		4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunnerTests.swift; sourceTree = "<group>"; };
 		4BD2A7D7B11C9A3945A29F6C /* UBRefreshCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRefreshCommand.h; sourceTree = "<group>"; };
 		61E9F8B9324B662DCC0E1AE5 /* UBScreensController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBScreensController.h; sourceTree = "<group>"; };
+		69871DBEF39C84FBF70EE64F /* WidgetWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetWatcher.swift; sourceTree = "<group>"; };
 		6DB453FCCEB0E66FF3B74F81 /* node-x64 */ = {isa = PBXFileReference; path = "node-x64"; sourceTree = "<group>"; };
 		6E944ECE6EC5E094BE7CCFC3 /* widget-status-hidden.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-hidden.png"; sourceTree = "<group>"; };
 		6F979201FDFC6D05280CB46E /* UBWindowGroup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBWindowGroup.h; sourceTree = "<group>"; };
@@ -96,12 +102,14 @@
 		74DEB10171BD829F341332E2 /* UBWindowGroup.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWindowGroup.m; sourceTree = "<group>"; };
 		7BE9829C1B786165046B8B93 /* UBWidgetsController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetsController.m; sourceTree = "<group>"; };
 		7C396434EA2141F9687ECEC7 /* UebersichtTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UebersichtTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		84DDDD017CF95BD0BE338C25 /* CommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandRunner.swift; sourceTree = "<group>"; };
 		869E775E17DC5D071BD5586C /* widget-status-visible@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "widget-status-visible@2x.png"; sourceTree = "<group>"; };
 		8976052859BF2DA38BE73FDE /* Perf.jsx */ = {isa = PBXFileReference; path = Perf.jsx; sourceTree = "<group>"; };
 		8AB0F93EF6B35F23A4373725 /* UBAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBAppDelegate.h; sourceTree = "<group>"; };
 		8DFA923298ED6C9046D7F5AC /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		912B77B5405F36A8288FD71A /* UBWindowsController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBWindowsController.h; sourceTree = "<group>"; };
 		948143BD21A24D5D67200BA0 /* uebersicht-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "uebersicht-logo.png"; sourceTree = "<group>"; };
+		97902B92A1E10EE3A836FD2C /* WidgetWatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetWatcherTests.swift; sourceTree = "<group>"; };
 		9C8B952C806D1DCC2CC78EA5 /* Uebersicht.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uebersicht.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D879CC852A8963EF7B1DA23 /* UBWidgetsStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UBWidgetsStore.m; sourceTree = "<group>"; };
 		9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeolocationTests.swift; sourceTree = "<group>"; };
@@ -148,12 +156,23 @@
 			);
 			sourceTree = "<group>";
 		};
+		48232150B89264B10A4724B2 /* Server */ = {
+			isa = PBXGroup;
+			children = (
+				84DDDD017CF95BD0BE338C25 /* CommandRunner.swift */,
+				69871DBEF39C84FBF70EE64F /* WidgetWatcher.swift */,
+			);
+			path = Server;
+			sourceTree = "<group>";
+		};
 		5C55250CC1D33DF3CB7B13C5 /* UebersichtTests */ = {
 			isa = PBXGroup;
 			children = (
+				4B3BF3D0321D88FDDBCFEA83 /* CommandRunnerTests.swift */,
 				9FE690F8B6F3AF30A3AF2DA5 /* GeolocationTests.swift */,
 				D58097606BE214794762E968 /* SwiftTests.swift */,
 				3F6A40861D2C003206E433F5 /* UebersichtTests.m */,
+				97902B92A1E10EE3A836FD2C /* WidgetWatcherTests.swift */,
 				ABBBD94C4A4D2CAC659BD716 /* InfoPlist.strings */,
 			);
 			path = UebersichtTests;
@@ -246,6 +265,7 @@
 				CA7CB91069255A4C82FD6806 /* widget-status-visible.png */,
 				869E775E17DC5D071BD5586C /* widget-status-visible@2x.png */,
 				08F4D991FCE00105C58A28A5 /* MainMenu.xib */,
+				48232150B89264B10A4724B2 /* Server */,
 				AA5F881F9C092684A0604026 /* Swift */,
 			);
 			path = Uebersicht;
@@ -397,6 +417,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE2CD08C18E0D7CC35676F12 /* CommandRunner.swift in Sources */,
 				3359213ADED02E9327088326 /* Dispatcher.swift in Sources */,
 				94A1CECCFDD4DAA3431A2A55 /* Geolocation.swift in Sources */,
 				E98ED2C1DED74DFDE2D2CCB5 /* Listener.swift in Sources */,
@@ -412,6 +433,7 @@
 				3F7EF7F28FA0952D3299BA80 /* UBWindow.m in Sources */,
 				B99E66D41A621EEB1164535E /* UBWindowGroup.m in Sources */,
 				5571D8192623A5705877CDD9 /* UBWindowsController.m in Sources */,
+				969D7201C4824C739FB7F447 /* WidgetWatcher.swift in Sources */,
 				4C6669B3A7C1C7BA885EB7E9 /* WidgetWebView.swift in Sources */,
 				1A7BB5BB1FA9EF3CABDBA713 /* WidgetWebViewController.swift in Sources */,
 				87794EE3304AFD87037F9324 /* main.m in Sources */,
@@ -422,9 +444,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DBD6B01FE95F55C273549D87 /* CommandRunnerTests.swift in Sources */,
 				A83551CCA6C493254227607F /* GeolocationTests.swift in Sources */,
 				CC5E53A53C4A049F02E74735 /* SwiftTests.swift in Sources */,
 				6803B60648C3FC39A5723F9D /* UebersichtTests.m in Sources */,
+				DC189D9E43D5A85BCA2F3949 /* WidgetWatcherTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
