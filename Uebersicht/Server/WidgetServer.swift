@@ -2,14 +2,12 @@ import Foundation
 import Network
 
 /// Native Swift replacement for the Node `server.coffee` HTTP + WebSocket
-/// listener. Single process, single port (41416 by default, bumped on
-/// collision), powered by Network.framework.
-///
-/// Scope right now is the framing: the listener accepts connections,
-/// dispatches HTTP requests through a `Router`, and upgrades WebSocket
-/// connections via `NWProtocolWebSocket`. The routes themselves — widget
-/// bundling, state serving, shell command execution — are layered on top
-/// by the final PR 4 integration step (coordinator not landed yet).
+/// listener. Runs on a single TCP port (41416 by default, bumped on port
+/// collision). Does HTTP routing for static files / widget bundles / state,
+/// and handles the WebSocket handshake + framing manually — on-connection
+/// first bytes are HTTP; if they include `Upgrade: websocket`, we reply
+/// with the 101 handshake (see `WebSocketFrame.handshakeResponse`) and
+/// switch that connection's reader to frame-decode mode.
 public final class WidgetServer: @unchecked Sendable {
 
     public struct Config: Sendable {
@@ -62,19 +60,18 @@ public final class WidgetServer: @unchecked Sendable {
         listener = nil
     }
 
+    public enum ServerError: Error { case noAvailablePort }
+
     // MARK: - Internals
 
     private func startOn(port: UInt16) throws {
         let params = NWParameters.tcp
-        let wsOptions = NWProtocolWebSocket.Options()
-        wsOptions.autoReplyPing = true
-        params.defaultProtocolStack.applicationProtocols.insert(wsOptions, at: 0)
-
         let listener = try NWListener(using: params, on: NWEndpoint.Port(rawValue: port)!)
         self.listener = listener
 
-        listener.newConnectionHandler = { [weak self] connection in
-            self?.handle(connection: connection)
+        listener.newConnectionHandler = { [config, queue] connection in
+            let handler = ConnectionHandler(connection: connection, config: config, queue: queue)
+            handler.begin()
         }
         listener.stateUpdateHandler = { state in
             if case .failed(let err) = state {
@@ -83,18 +80,6 @@ public final class WidgetServer: @unchecked Sendable {
         }
         listener.start(queue: queue)
     }
-
-    private func handle(connection: NWConnection) {
-        connection.start(queue: queue)
-        let conn = ConnectionContext(
-            connection: connection,
-            config: config,
-            queue: queue
-        )
-        conn.begin()
-    }
-
-    public enum ServerError: Error { case noAvailablePort }
 }
 
 // MARK: - HTTP value types
@@ -104,6 +89,12 @@ public struct HTTPRequest: Sendable {
     public let path: String
     public let headers: [String: String]
     public let body: Data
+
+    /// Case-insensitive header lookup.
+    public func header(_ name: String) -> String? {
+        let lower = name.lowercased()
+        return headers.first { $0.key.lowercased() == lower }?.value
+    }
 }
 
 public struct HTTPResponse: Sendable {
@@ -129,20 +120,37 @@ public struct HTTPResponse: Sendable {
     }
 
     public static func text(_ s: String, status: Int = 200, contentType: String = "text/plain") -> HTTPResponse {
-        HTTPResponse(
-            status: status,
-            headers: ["Content-Type": contentType],
-            body: Data(s.utf8)
+        HTTPResponse(status: status, headers: ["Content-Type": contentType], body: Data(s.utf8))
+    }
+
+    public static func file(at url: URL) -> HTTPResponse {
+        guard let data = try? Data(contentsOf: url) else { return .notFound }
+        return HTTPResponse(
+            status: 200,
+            headers: ["Content-Type": contentType(for: url)],
+            body: data
         )
+    }
+
+    static func contentType(for url: URL) -> String {
+        switch url.pathExtension.lowercased() {
+        case "html", "htm": return "text/html; charset=utf-8"
+        case "js", "mjs": return "application/javascript; charset=utf-8"
+        case "css": return "text/css; charset=utf-8"
+        case "json": return "application/json; charset=utf-8"
+        case "svg": return "image/svg+xml"
+        case "png": return "image/png"
+        case "jpg", "jpeg": return "image/jpeg"
+        case "gif": return "image/gif"
+        case "woff2": return "font/woff2"
+        default: return "application/octet-stream"
+        }
     }
 }
 
 // MARK: - WebSocket connection
 
 public final class WebSocketConnection: @unchecked Sendable {
-    private let connection: NWConnection
-    private let queue: DispatchQueue
-    private var handler: (@Sendable (Message) -> Void)?
 
     public enum Message: Sendable {
         case text(String)
@@ -150,9 +158,12 @@ public final class WebSocketConnection: @unchecked Sendable {
         case closed
     }
 
-    init(connection: NWConnection, queue: DispatchQueue) {
+    private let connection: NWConnection
+    private var handler: (@Sendable (Message) -> Void)?
+    private var buffer = Data()
+
+    init(connection: NWConnection) {
         self.connection = connection
-        self.queue = queue
     }
 
     public func onMessage(_ handler: @escaping @Sendable (Message) -> Void) {
@@ -161,57 +172,76 @@ public final class WebSocketConnection: @unchecked Sendable {
     }
 
     public func send(text: String) {
-        let metadata = NWProtocolWebSocket.Metadata(opcode: .text)
-        let context = NWConnection.ContentContext(identifier: "text", metadata: [metadata])
         connection.send(
-            content: Data(text.utf8),
-            contentContext: context,
-            isComplete: true,
+            content: WebSocketFrame.encode(text: text),
             completion: .contentProcessed { _ in }
         )
     }
 
     public func close() {
-        connection.cancel()
+        connection.send(
+            content: WebSocketFrame.encode(opcode: .close, payload: Data()),
+            completion: .contentProcessed { [weak self] _ in self?.connection.cancel() }
+        )
     }
 
     private func receive() {
-        connection.receiveMessage { [weak self] data, context, _, error in
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, complete, error in
             guard let self else { return }
             if let error {
-                NSLog("WS recv error: %@", String(describing: error))
+                NSLog("WS read error: %@", String(describing: error))
                 self.handler?(.closed)
                 return
             }
-            if let data,
-               let metadata = context?.protocolMetadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata {
-                switch metadata.opcode {
-                case .text:
-                    self.handler?(.text(String(decoding: data, as: UTF8.self)))
-                case .binary:
-                    self.handler?(.binary(data))
-                case .close:
-                    self.handler?(.closed)
-                    return
-                default:
-                    break
-                }
+            if let data { self.buffer.append(data) }
+            self.drainFrames()
+            if complete {
+                self.handler?(.closed)
+                return
             }
             self.receive()
         }
     }
+
+    private func drainFrames() {
+        while true {
+            switch WebSocketFrame.decode(from: buffer) {
+            case .needsMoreData:
+                return
+            case .frame(let decoded):
+                buffer.removeFirst(decoded.bytesConsumed)
+                switch decoded.opcode {
+                case .text:
+                    let s = String(data: decoded.payload, encoding: .utf8) ?? ""
+                    handler?(.text(s))
+                case .binary:
+                    handler?(.binary(decoded.payload))
+                case .close:
+                    handler?(.closed)
+                    connection.cancel()
+                    return
+                case .ping:
+                    connection.send(
+                        content: WebSocketFrame.encode(opcode: .pong, payload: decoded.payload),
+                        completion: .contentProcessed { _ in }
+                    )
+                default:
+                    break
+                }
+            }
+        }
+    }
 }
 
-// MARK: - Per-connection context
+// MARK: - Per-connection handler
 
-/// Parses the initial HTTP request, routes it, and either writes back an
-/// HTTP response or (on a WebSocket upgrade) hands off to the config's
-/// `onWebSocket` callback.
-private final class ConnectionContext: @unchecked Sendable {
+/// Accumulates bytes on a new NWConnection, parses the first HTTP request,
+/// and either serves it as HTTP or upgrades it to WebSocket.
+private final class ConnectionHandler: @unchecked Sendable {
     let connection: NWConnection
     let config: WidgetServer.Config
     let queue: DispatchQueue
-    var accumulator = Data()
+    var buffer = Data()
 
     init(connection: NWConnection, config: WidgetServer.Config, queue: DispatchQueue) {
         self.connection = connection
@@ -220,57 +250,73 @@ private final class ConnectionContext: @unchecked Sendable {
     }
 
     func begin() {
-        // NWProtocolWebSocket transparently handles the upgrade handshake
-        // when the client negotiates WebSocket. In that case
-        // `receiveMessage` yields websocket frames; otherwise we receive
-        // the raw HTTP bytes via `receive(minimumIncompleteLength:)`.
-        //
-        // We use the message-based path first to detect the upgrade: on a
-        // websocket connection, the first receive gives metadata with
-        // opcode=text/binary. On plain HTTP, receiveMessage still works
-        // because `NWConnection` will surface the accumulated bytes.
-        //
-        // Implementation choice: peek via raw receive; if it's a WS
-        // upgrade, Network.framework has already completed the handshake
-        // and we'll see a websocket opcode on receiveMessage instead.
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, context, isComplete, error in
+        connection.start(queue: queue)
+        readMore()
+    }
+
+    private func readMore() {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
             guard let self else { return }
-            if let metadata = context?.protocolMetadata(definition: NWProtocolWebSocket.definition) as? NWProtocolWebSocket.Metadata {
-                // It's a WebSocket upgrade — start streaming through the WS API.
-                _ = metadata
-                self.handleWebSocket()
+            if let error {
+                NSLog("HTTP read error: %@", String(describing: error))
+                self.connection.cancel()
                 return
             }
-            if let data { self.accumulator.append(data) }
-            if let request = Self.parseRequest(self.accumulator) {
-                Task { [config = self.config, accumulator = self.accumulator, connection = self.connection] in
-                    let response = await config.router(request)
-                    let bytes = Self.serialize(response)
-                    connection.send(content: bytes, completion: .contentProcessed { _ in
-                        connection.cancel()
-                    })
-                    _ = accumulator
-                }
-            } else if error != nil || isComplete {
+            if let data { self.buffer.append(data) }
+            if let request = HTTPParser.parse(self.buffer) {
+                self.handle(request: request)
+            } else if isComplete {
                 self.connection.cancel()
             } else {
-                self.begin()
+                self.readMore()
             }
         }
     }
 
-    private func handleWebSocket() {
-        let ws = WebSocketConnection(connection: connection, queue: queue)
-        Task { [config = self.config] in
-            await config.onWebSocket(ws)
+    private func handle(request: HTTPRequest) {
+        if let upgrade = request.header("Upgrade"), upgrade.lowercased() == "websocket" {
+            upgradeToWebSocket(request)
+        } else {
+            Task { [config = self.config, connection = self.connection] in
+                let response = await config.router(request)
+                connection.send(
+                    content: HTTPParser.serialize(response),
+                    completion: .contentProcessed { _ in connection.cancel() }
+                )
+            }
         }
     }
 
-    // MARK: - HTTP parsing / serialization
+    private func upgradeToWebSocket(_ request: HTTPRequest) {
+        guard let key = request.header("Sec-WebSocket-Key") else {
+            let response = HTTPResponse(status: 400, body: Data("bad WS upgrade".utf8))
+            connection.send(
+                content: HTTPParser.serialize(response),
+                completion: .contentProcessed { [weak self] _ in self?.connection.cancel() }
+            )
+            return
+        }
+        let handshake = WebSocketFrame.handshakeResponse(forKey: key)
+        connection.send(content: handshake, completion: .contentProcessed { [weak self] _ in
+            guard let self else { return }
+            let ws = WebSocketConnection(connection: self.connection)
+            Task { [config = self.config] in
+                await config.onWebSocket(ws)
+            }
+        })
+    }
+}
 
-    static func parseRequest(_ data: Data) -> HTTPRequest? {
-        guard let raw = String(data: data, encoding: .utf8) else { return nil }
-        guard let headerEnd = raw.range(of: "\r\n\r\n") else { return nil }
+// MARK: - HTTP parser
+
+enum HTTPParser {
+    /// Parses an HTTP request out of the provided bytes, or returns nil
+    /// if the bytes don't yet contain a complete request (headers +
+    /// declared Content-Length bytes of body).
+    static func parse(_ data: Data) -> HTTPRequest? {
+        guard let raw = String(data: data, encoding: .utf8),
+              let headerEnd = raw.range(of: "\r\n\r\n")
+        else { return nil }
 
         let headerPart = raw[raw.startIndex..<headerEnd.lowerBound]
         let bodyPart = raw[headerEnd.upperBound..<raw.endIndex]
@@ -287,10 +333,10 @@ private final class ConnectionContext: @unchecked Sendable {
             headers[key] = value
         }
 
-        if let contentLengthStr = headers["Content-Length"],
+        if let contentLengthStr = headers["Content-Length"] ?? headers["content-length"],
            let contentLength = Int(contentLengthStr),
-           bodyPart.count < contentLength {
-            return nil // wait for more bytes
+           bodyPart.utf8.count < contentLength {
+            return nil
         }
 
         return HTTPRequest(
@@ -316,13 +362,12 @@ private final class ConnectionContext: @unchecked Sendable {
     static func statusText(_ status: Int) -> String {
         switch status {
         case 200: return "OK"
-        case 201: return "Created"
+        case 101: return "Switching Protocols"
         case 204: return "No Content"
         case 301: return "Moved Permanently"
         case 302: return "Found"
         case 304: return "Not Modified"
         case 400: return "Bad Request"
-        case 401: return "Unauthorized"
         case 403: return "Forbidden"
         case 404: return "Not Found"
         case 500: return "Internal Server Error"
