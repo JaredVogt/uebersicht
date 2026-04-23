@@ -167,6 +167,7 @@ Branch `modern` created off master `607ab55`.
 - PR 3 🟡 **partial, good enough to proceed**.
   - Done: `UBListener` and `UBDispatcher` rewritten in Swift (`Listener.swift`, `Dispatcher.swift`). Every `performSelector:withObject:afterDelay:` removed (replaced by `dispatch_after` in the two remaining Obj-C call sites in `UBAppDelegate.m`). Dead IOKit fallback (`IODisplayConnect`, `getDisplayInfoDictionary`, `screenNameForDisplay:`) ripped out of `UBScreensController.m` — target is 14.0, `NSScreen.localizedName` is always available.
   - **Deferred to a later pass**: full Swift rewrite of `UBScreensController`, `UBWidgetsStore`, `UBWidgetsController` as actors. These classes work fine via the `@objc`-bridged Swift classes they depend on; the Swift conversion is cosmetic, not architectural, and can piggyback on PR 5 (menu bar) when `UBWidgetsController`'s menu wiring gets rebuilt in SwiftUI anyway.
+- PR 4 🟡 **scaffolding in place**. `Uebersicht/Server/CommandRunner.swift` and `Uebersicht/Server/WidgetWatcher.swift` shipped with tests. Node sidecar is still running; next session does `JSXTransformer` → `WidgetServer` (NWListener HTTP + WS) → cut over `UBAppDelegate.m` → delete `server/`.
 
 ## Handoff — pick up at PR 4
 
@@ -198,9 +199,9 @@ Uebersicht/Server/
 ### Concrete PR 4 work order
 
 1. **Scaffolding (risk-free, test-first).** Ship the self-contained building blocks with tests before wiring anything in.
-   - `WidgetWatcher.swift` + `WidgetWatcherTests.swift` (FSEvents → `AsyncStream<WidgetChange>`). Reference Apple docs: `FSEventStream` C API or `DispatchSource.makeFileSystemObjectSource` for per-file watch.
-   - `CommandRunner.swift` + `CommandRunnerTests.swift` (wraps `Process`, streams stdout as `AsyncSequence<String>`, supports timeout + cancellation).
-   - `JSXTransformer.swift` + `JSXTransformerTests.swift` (calls bundled `esbuild` binary via `Process`). Start without bundling — invoke a system `esbuild` binary if present, hard-fail with a clear error otherwise. Bundling the universal esbuild binary is a separate concern once the transform flow is proven.
+   - ✅ `CommandRunner.swift` + `CommandRunnerTests.swift` — shipped this session. `Process` + `AsyncThrowingStream<Event>` with timeout + cancellation.
+   - ✅ `WidgetWatcher.swift` + `WidgetWatcherTests.swift` — shipped this session (FSEvents-based). Tests are currently shape-only because `/private/var/folders` doesn't reliably emit FSEvents under the test host; add a real integration test using `~/Library/Caches` path once the rest is wired.
+   - ⏳ `JSXTransformer.swift` + `JSXTransformerTests.swift` (calls bundled `esbuild` binary via `Process`). Start without bundling — invoke a system `esbuild` binary if present, hard-fail with a clear error otherwise. Bundling the universal esbuild binary is a separate concern once the transform flow is proven.
 2. **Server.** `WidgetServer.swift` using `Network.framework` `NWListener` with `NWProtocolWebSocket.Options`. Serve HTTP GET for static files + `/state` JSON, and accept WS connections that bridge to the `AsyncStream` fan-out used by the Listener/Dispatcher.
 3. **Client bundle.** The Node sidecar currently serves an HTML file + `client.js` (compiled from `server/src/uebersicht.js` + React). Option A: copy `server/release/public/` into Resources, keep the same HTML. Option B: rebuild the client with esbuild at build time. Start with A, revisit in a separate PR.
 4. **Cut over.** Swap `launchWidgetServer:` in `UBAppDelegate.m` for starting `WidgetServer` in-process. Keep the same port number (41416) so widget-side URLs don't need to know anything changed.
