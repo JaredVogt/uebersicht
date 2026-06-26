@@ -1,11 +1,11 @@
-# Uebersicht
+# dynamicd
 *Keep an eye on what's happening on your machine and in the world.*
 
-For general info check out the [Uebersicht website.](http://tracesof.net/uebersicht)
+For general info check out the [dynamicd website.](http://tracesof.net/dynamicd)
 
 ## Writing Widgets
 
-In essence, widgets are plain JavaScript objects that define a few key properties and methods. They need to be defined in a single file with a `.js` or `.coffee` extension for Uebersicht to pick them up. Uebersicht will listen to file changes inside your widget directory, so you can edit widgets and see the result live.
+In essence, widgets are plain JavaScript objects that define a few key properties and methods. They need to be defined in a single file with a `.js` or `.coffee` extension for dynamicd to pick them up. dynamicd will listen to file changes inside your widget directory, so you can edit widgets and see the result live.
 
 You can also include node modules and split your widget into separate files using [NodeJS' module syntax](https://www.sitepoint.com/understanding-module-exports-exports-node-js/). Any file that is in a directory called `/node_modules`, `/lib` or `/src` will be treated as a module and will not show up as a separate widget.
 
@@ -139,7 +139,7 @@ Runs a shell command and calls callback with the result. Command is a string con
 
 ## Geolocation API
 
-While the WebView used by Uebersicht seems to provide the standard HTML5 geolocation API, it is not functional and there seems to be no way to enable it. Uebersicht now provides a custom implementation, which tries to follow the standard implementation as closely as possible. However, so far it provides only the basics and might still be somewehat unstable. The api can be found under `window.geolocation` (instead of `window.navigator.geolocation`). And supports the following methods
+While the WebView used by dynamicd seems to provide the standard HTML5 geolocation API, it is not functional and there seems to be no way to enable it. dynamicd now provides a custom implementation, which tries to follow the standard implementation as closely as possible. However, so far it provides only the basics and might still be somewehat unstable. The api can be found under `window.geolocation` (instead of `window.navigator.geolocation`). And supports the following methods
 
 ```coffeescript
 geolocation.getCurrentPosition(callback)
@@ -155,7 +155,7 @@ geolocation.clearWatch(watchId)
 
 Check the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation) for details on how to use these methods. The main difference to the standard API is that none of them accept options (the accuracy for position data is always set to the highest) and error reporting has not be implemented yet.
 
-However, in a adition to the standard `Position` object provided by the standard API, Uebersicht provides an extra `address` property with the following fields:
+However, in a adition to the standard `Position` object provided by the standard API, dynamicd provides an extra `address` property with the following fields:
 
   - Street
   - City
@@ -167,10 +167,10 @@ However, in a adition to the standard `Position` object provided by the standard
 
 ## Hosted Functionality
 
-A global object called `uebersicht` exists which exposes extra functionality that is typically not available in a browser. At the moment it is very limited:
+A global object called `dynamicd` exists which exposes extra functionality that is typically not available in a browser. At the moment it is very limited:
 
 
-### uebersicht.makeBgSlice(canvas)
+### dynamicd.makeBgSlice(canvas)
 
 Has been deprecated as of version 0.8 in favor of -webkit-backdrop-filter. It should be available on all systems that have Safari 9+ installed. https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter
 
@@ -187,21 +187,21 @@ If you like you make Ajax requests to an external site without using a command, 
 
 ## Scripting Support
 
-Uebersicht has AppleScript support since version 1.1.45. To get detailed information on what you can script, open the Script Editor and add Uebersicht to the Library (use Window -> Library to show). Here are a few examples of what you can do with AppleScript:
+dynamicd has AppleScript support since version 1.1.45. To get detailed information on what you can script, open the Script Editor and add dynamicd to the Library (use Window -> Library to show). Here are a few examples of what you can do with AppleScript:
 
-    tell application "Uebersicht" to refresh
+    tell application "dynamicd" to refresh
 
 refreshes all widgets.
 
-    tell application "Uebersicht" to refresh widget id "my-widget"
+    tell application "dynamicd" to refresh widget id "my-widget"
 
 refreshes widget with id "my-widget".
 
-    tell application "Uebersicht" to every widget
+    tell application "dynamicd" to every widget
 
 lists all widgets.
 
-    tell application "Uebersicht" to set hidden of widget id "top-cpu-coffee" to false
+    tell application "dynamicd" to set hidden of widget id "top-cpu-coffee" to false
 
 hides the widget with ID "top-cpu-coffee"
 
@@ -209,13 +209,13 @@ hides the widget with ID "top-cpu-coffee"
 
 Unfortunately OS X seems to use a different UTF-8 code point for the Ü in its file system than you get by typing it normally (or by copy pasting it from here). There are three ways you can get the correct character:
 
-- use the Script Editor of OS X and add Uebersicht to its library. Once you initiate a new script via the Editor it will contain the correct name of the app.
-- while Uebersicht is running, list the process using `ps ax | grep sicht` and copy paste the name from there
-- rename the app to whatever you like ('Uebersicht' would be the correct spelling without using the umlaut)
+- use the Script Editor of OS X and add dynamicd to its library. Once you initiate a new script via the Editor it will contain the correct name of the app.
+- while dynamicd is running, list the process using `ps ax | grep sicht` and copy paste the name from there
+- rename the app to whatever you like ('dynamicd' would be the correct spelling without using the umlaut)
 
-## Building Uebersicht
+## Building dynamicd
 
-To build Uebersicht you will need to have NodeJS and a few dependencies installed:
+To build dynamicd you will need to have NodeJS and a few dependencies installed:
 
 ### setup
 
@@ -247,13 +247,13 @@ coffee server/server.coffee -d <path/to/widget/dir> -p <port>
 
 # Building in Xcode
 
-The first time opening the project in Xcode you might see this message when trying to build: "The run destination My Mac is not valid for Running the scheme 'Uebersicht'."
+The first time opening the project in Xcode you might see this message when trying to build: "The run destination My Mac is not valid for Running the scheme 'dynamicd'."
 
-Click on `Uebersicht` in the project navigator and then select the menu `Editor > Validate Settings...` and click `Perform Changes`.
+Click on `dynamicd` in the project navigator and then select the menu `Editor > Validate Settings...` and click `Perform Changes`.
 
 You can then attempt to build, you may then be presented with code sign issues, click `Fix Issue` to continue.
 
-Now you need to remove the code signing shell script, select the `Uebersicht` target and under `Build Phases` remove the code in the `Code Sign Frameworks` section.
+Now you need to remove the code signing shell script, select the `dynamicd` target and under `Build Phases` remove the code in the `Code Sign Frameworks` section.
 
 You should now be able to build successfully.
 
@@ -263,6 +263,6 @@ http://stackoverflow.com/questions/31254725/transport-security-has-blocked-a-cle
 
 # Legal
 
-The source for Uebersicht is released under the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+The source for dynamicd is released under the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 © 2016 Felix Hageloh

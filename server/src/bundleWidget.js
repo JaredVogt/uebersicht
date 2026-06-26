@@ -37,7 +37,7 @@ module.exports = function bundleWidget(id, filePath) {
 
   bundle.plugin(watchify);
   bundle.require(filePath, {expose: id});
-  bundle.external('uebersicht');
+  bundle.external('dynamicd');
 
   if (filePath.match(/\.coffee$/)) {
     bundle.transform(coffeeify, {

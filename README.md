@@ -1,13 +1,13 @@
-# Uebersicht
+# dynamicd
 *Keep an eye on what's happening on your machine and in the world.*
 
-For general info check out the [Uebersicht website.](http://tracesof.net/uebersicht)
+For general info check out the [dynamicd website.](http://tracesof.net/dynamicd)
 
 ## Writing Widgets
 
-In essence, widgets are JavaScript modules that expose a few key properties and methods. They need to be defined in a single file with a `.jsx` extension for Uebersicht to pick them up. Previously, widgets could be written in CoffeeScript and are still supported. Check [the old documentation](ClassicWidgets.md) for details. Uebersicht will listen to file changes inside your widget directory, so you can edit widgets and see the result live.
+In essence, widgets are JavaScript modules that expose a few key properties and methods. They need to be defined in a single file with a `.jsx` extension for dynamicd to pick them up. Previously, widgets could be written in CoffeeScript and are still supported. Check [the old documentation](ClassicWidgets.md) for details. dynamicd will listen to file changes inside your widget directory, so you can edit widgets and see the result live.
 
-Widget rendering is done using [React](https://reactjs.org) and its [JSX](https://reactjs.org/docs/introducing-jsx.html) syntax. Simple widget state is managed for you by Uebersicht, but for more advanced widgets you can manage state using a Redux-like pattern. You `dispatch` events, which get processed by a single `updateState` function which returns the new state, which is passed to the render function of your widget.
+Widget rendering is done using [React](https://reactjs.org) and its [JSX](https://reactjs.org/docs/introducing-jsx.html) syntax. Simple widget state is managed for you by dynamicd, but for more advanced widgets you can manage state using a Redux-like pattern. You `dispatch` events, which get processed by a single `updateState` function which returns the new state, which is passed to the render function of your widget.
 
 State is kept when you modify your widget, which allows for live coding. Any changes to the UI of your widget will be immediately visible.  One drawback (at least with the current implementation) is that if you change the shape of your state you might have to 'Refresh all Widgets' from the app menu for your widget to work.
 
@@ -172,12 +172,12 @@ export const init = (dispatch) => {
 
 ## Styling Widgets
 
-Uebersicht comes bundled with [Emotion ](https://emotion.sh) (version 9). It exposes it's `css` and `styled` functions via the `uebersicht` module.
+dynamicd comes bundled with [Emotion ](https://emotion.sh) (version 9). It exposes it's `css` and `styled` functions via the `dynamicd` module.
 
 As described above, you can use `className` to style and position the root node of your widget. For further styling you can do something like this:
 
 ```jsx
-import { css } from "uebersicht"
+import { css } from "dynamicd"
 
 const header = css`
   font-family: Ubuntu;
@@ -224,7 +224,7 @@ export const render = ({ colors }) => {
 Alternatively, you can also make use of Emotion's styles components:
 
 ```jsx
-import { styled } from "uebersicht"
+import { styled } from "dynamicd"
 
 const Header = styled("h1")`
   font-family: Ubuntu;
@@ -271,12 +271,12 @@ Finally, since you can also install and import any module you like, you can use 
 
 ## Running Shell Commands
 
-If need to run extra shell commands without using the [command](#command) property, you can import the `run` function from the `uebersicht` module.
+If need to run extra shell commands without using the [command](#command) property, you can import the `run` function from the `dynamicd` module.
 
 It returns a Promise, which will resolve to the output of the command (stdout) or reject if any error occurred.
 
 ```jsx
-import { run } from 'uebersicht'
+import { run } from 'dynamicd'
 
 export const render => (props, dispatch) {
   return (
@@ -291,11 +291,11 @@ export const render => (props, dispatch) {
   );
 }
 ```
-> Note that in order to receive click events you need to configure an interaction shortcut and give Uebersicht accessibility access.
+> Note that in order to receive click events you need to configure an interaction shortcut and give dynamicd accessibility access.
 
 ## Geolocation API
 
-While the WebView used by Uebersicht seems to provide the standard HTML5 geolocation API, it is not functional and there seems to be no way to enable it. Uebersicht now provides a custom implementation, which tries to follow the standard implementation as closely as possible. However, so far it provides only the basics and might still be somewhat unstable. The api can be found under `window.geolocation` (instead of `window.navigator.geolocation`). And supports the following methods
+While the WebView used by dynamicd seems to provide the standard HTML5 geolocation API, it is not functional and there seems to be no way to enable it. dynamicd now provides a custom implementation, which tries to follow the standard implementation as closely as possible. However, so far it provides only the basics and might still be somewhat unstable. The api can be found under `window.geolocation` (instead of `window.navigator.geolocation`). And supports the following methods
 
 ```js
 geolocation.getCurrentPosition(callback)
@@ -311,7 +311,7 @@ geolocation.clearWatch(watchId)
 
 Check the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation) for details on how to use these methods. The main difference to the standard API is that none of them accept options (the accuracy for position data is always set to the highest) and error reporting has not be implemented yet.
 
-However, in a addition to the standard `Position` object provided by the standard API, Uebersicht provides an extra `address` property with the following fields:
+However, in a addition to the standard `Position` object provided by the standard API, dynamicd provides an extra `address` property with the following fields:
 
   - Street
   - City
@@ -334,28 +334,28 @@ If you like you make Ajax requests to an external site without using a command, 
 
 ## Scripting Support
 
-Uebersicht has AppleScript support since version 1.1.45. To get detailed information on what you can script, open the Script Editor and add Uebersicht to the Library (use Window -> Library to show). Here are a few examples of what you can do with AppleScript. (Note that the examples all use the application id instead of the app name. This is because typing the umlaut Ue can be tricky):
+dynamicd has AppleScript support since version 1.1.45. To get detailed information on what you can script, open the Script Editor and add dynamicd to the Library (use Window -> Library to show). Here are a few examples of what you can do with AppleScript. (Note that the examples all use the application id instead of the app name. This is because typing the umlaut Ue can be tricky):
 
-    tell application id "tracesOf.Uebersicht" to refresh
+    tell application id "tracesOf.dynamicd" to refresh
 
 refreshes all widgets.
 
-    tell application id "tracesOf.Uebersicht" to refresh widget id "my-widget"
+    tell application id "tracesOf.dynamicd" to refresh widget id "my-widget"
 
 refreshes widget with id "my-widget".
 
-    tell application id "tracesOf.Uebersicht" to every widget
+    tell application id "tracesOf.dynamicd" to every widget
 
 lists all widgets.
 
-    tell application id "tracesOf.Uebersicht" to set hidden of widget id "top-cpu-coffee" to false
+    tell application id "tracesOf.dynamicd" to set hidden of widget id "top-cpu-coffee" to false
 
 hides the widget with ID "top-cpu-coffee"
 
 
-## Building Uebersicht
+## Building dynamicd
 
-To build Uebersicht you will need to have NodeJS and a few dependencies installed:
+To build dynamicd you will need to have NodeJS and a few dependencies installed:
 
 ### setup
 
@@ -393,13 +393,13 @@ coffee server/server.coffee -d <path/to/widget/dir> -p <port>
 
 # Building in Xcode
 
-The first time opening the project in Xcode you might see this message when trying to build: "The run destination My Mac is not valid for Running the scheme 'Uebersicht'."
+The first time opening the project in Xcode you might see this message when trying to build: "The run destination My Mac is not valid for Running the scheme 'dynamicd'."
 
-Click on `Uebersicht` in the project navigator and then select the menu `Editor > Validate Settings...` and click `Perform Changes`.
+Click on `dynamicd` in the project navigator and then select the menu `Editor > Validate Settings...` and click `Perform Changes`.
 
 You can then attempt to build, you may then be presented with code sign issues, click `Fix Issue` to continue.
 
-Now you need to remove the code signing shell script, select the `Uebersicht` target and under `Build Phases` remove the code in the `Code Sign Frameworks` section.
+Now you need to remove the code signing shell script, select the `dynamicd` target and under `Build Phases` remove the code in the `Code Sign Frameworks` section.
 
 You should now be able to build successfully.
 
@@ -409,6 +409,6 @@ http://stackoverflow.com/questions/31254725/transport-security-has-blocked-a-cle
 
 # Legal
 
-The source for Uebersicht is released under the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+The source for dynamicd is released under the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 © 2019 Felix Hageloh

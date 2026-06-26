@@ -1,5 +1,5 @@
 parseArgs = require 'minimist'
-UebersichtServer = require './src/app.coffee'
+dynamicdServer = require './src/app.coffee'
 cors_proxy = require 'cors-anywhere'
 path = require 'path'
 
@@ -16,7 +16,7 @@ try
   options =
     loginShell: args['login-shell']
 
-  server = UebersichtServer(
+  server = dynamicdServer(
     Number(port),
     widgetPath,
     settingsPath,
