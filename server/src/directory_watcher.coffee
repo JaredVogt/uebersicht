@@ -58,6 +58,7 @@ module.exports = (directoryPath, callback) ->
       fs.readdir path, (err, subPaths) ->
         return console.log err if err
         for subPath in subPaths
+          continue if subPath == 'inactive'
           fullPath = paths.join(path, subPath)
           getPathType fullPath, (p, t) -> findFiles(p, t, onFound)
 

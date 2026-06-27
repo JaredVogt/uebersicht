@@ -106,18 +106,15 @@
 
 - (NSData*)ensureDefaultsWidgetDir
 {
-    NSArray* urls = [[NSFileManager defaultManager]
-        URLsForDirectory:NSApplicationSupportDirectory
-        inDomains:NSUserDomainMask
-    ];
-    
-    NSURL* defaultDir = [urls[0]
-        URLByAppendingPathComponent:@"dynamicd/widgets"
+    NSURL* homeDir = [NSURL fileURLWithPath:NSHomeDirectory() isDirectory:YES];
+
+    NSURL* defaultDir = [homeDir
+        URLByAppendingPathComponent:@".config/dynamicd"
         isDirectory:YES
     ];
-    
+
     [self createIfNotExists:defaultDir];
-    
+
     return [NSKeyedArchiver archivedDataWithRootObject:defaultDir];
 }
 
