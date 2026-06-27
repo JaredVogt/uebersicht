@@ -117,6 +117,7 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
      ];
     
     [self addSelectedScreensOptionToMenu:widgetMenu forWidget:widgetId];
+    [self addSourceManagedNoticeToMenu:widgetMenu forWidget:widgetId];
     [widgetMenu insertItem:[NSMenuItem separatorItem] atIndex:0];
     
     [self addMainScreenOptionToMenu:widgetMenu forWidget:widgetId];
@@ -154,7 +155,10 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     NSDictionary* settings = [widgets getSettings:widgetId];
     [item setTarget:self];
     [item setRepresentedObject:widgetId];
-    [item setState:[settings[@"showOnMainScreen"] boolValue]];
+    [item setState:[self isSourceManaged:widgetId]
+        ? NO
+        : [settings[@"showOnMainScreen"] boolValue]
+    ];
     [menu insertItem:item atIndex:0];
 }
 
@@ -169,7 +173,10 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     NSDictionary* settings = [widgets getSettings:widgetId];
     [item setTarget:self];
     [item setRepresentedObject:widgetId];
-    [item setState:[settings[@"showOnAllScreens"] boolValue]];
+    [item setState:[self isSourceManaged:widgetId]
+        ? NO
+        : [settings[@"showOnAllScreens"] boolValue]
+    ];
     [menu insertItem:item atIndex:0];
 }
 
@@ -188,6 +195,22 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     [menu insertItem:item atIndex:0];
 }
 
+- (void)addSourceManagedNoticeToMenu:(NSMenu*)menu
+                           forWidget:(NSString*)widgetId
+{
+    if (![self isSourceManaged:widgetId]) return;
+
+    NSMenuItem* item = [[NSMenuItem alloc]
+        initWithTitle: [NSString stringWithFormat:@"Screens set by widget: %@",
+            [widgets screenTargetFor:widgetId]
+        ]
+        action: nil
+        keyEquivalent: @""
+    ];
+    [item setEnabled:NO];
+    [menu insertItem:item atIndex:0];
+}
+
 - (void)addSelectedScreensOptionToMenu:(NSMenu*)menu
                              forWidget:(NSString*)widgetId
 {
@@ -195,7 +218,10 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     NSDictionary* settings = [widgets getSettings:widgetId];
     
     [item setTitle:@"Show on selected screens:"];
-    [item setState:[settings[@"showOnSelectedScreens"] boolValue]];
+    [item setState:[self isSourceManaged:widgetId]
+        ? NO
+        : [settings[@"showOnSelectedScreens"] boolValue]
+    ];
     [item setEnabled:NO];
     [menu insertItem:item atIndex:0];
 }
@@ -254,12 +280,22 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
             }
         ];
         
-        if ([widgetScreens containsObject:screenId]) {
+        if (![self isSourceManaged:widgetId] &&
+            [widgetScreens containsObject:screenId]) {
             [newItem setState:YES];
         }
         [menu insertItem:newItem atIndex:i];
         i++;
     }
+}
+
+// A widget whose source declares a `screen` target controls its own placement
+// until the user overrides it from this menu (which sets `userModified`).
+- (BOOL)isSourceManaged:(NSString*)widgetId
+{
+    NSDictionary* settings = [widgets getSettings:widgetId];
+    return [widgets screenTargetFor:widgetId] != nil &&
+        ![settings[@"userModified"] boolValue];
 }
 
 - (BOOL)isWidgetVisible:(NSString*)widgetId
@@ -268,6 +304,8 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     BOOL isVisible = NO;
     if ([settings[@"hidden"] boolValue]) {
         isVisible = NO;
+    } else if ([self isSourceManaged:widgetId]) {
+        isVisible = YES;
     } else if ([settings[@"showOnAllScreens"] boolValue]) {
         isVisible = YES;
     } else if ([settings[@"showOnMainScreen"] boolValue]) {

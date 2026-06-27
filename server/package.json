@@ -2,25 +2,30 @@
   "name": "dynamicd-server",
   "version": "0.0.0",
   "description": "Node.js backend for dynamicd",
-  "main": "server.coffee",
+  "main": "server.ts",
   "scripts": {
     "test": "npm run-script test-local && npm run-script test-browser",
-    "test-local": "tape -r coffee-script/register spec/backend/**/* | tap-spec",
-    "test-browser": "browserify -t coffeeify  spec/frontend/*.*  | tape-run | tap-spec",
-    "start": "coffee server.coffee",
+    "test-local": "tape -r ts-node/register -r coffee-script/register spec/backend/**/* | tap-spec",
+    "test-browser": "browserify --extension=.ts -t coffeeify -t [ babelify --extensions .ts --extensions .jsx --extensions .js ] spec/frontend/*.* | tape-run | tap-spec",
+    "start": "ts-node server.ts",
+    "typecheck": "tsc --noEmit",
     "release": "npm run-script build-client && npm run-script build-server",
-    "build-client": "browserify -i ws -t coffeeify -t babelify -r ./src/dynamicd.js:dynamicd client.coffee | uglifyjs -c > release/public/client.js",
-    "build-server": "browserify -t coffeeify --node --detect-globals false --no-bundle-external server.coffee > release/server.js && cd release && npm prune --production && npm install --production --no-progress"
+    "build-client": "browserify -i ws --extension=.ts -t [ babelify --extensions .ts --extensions .jsx --extensions .js ] -r ./src/dynamicd.ts:dynamicd client.ts | uglifyjs -c > release/public/client.js",
+    "build-server": "browserify --node --detect-globals false --no-bundle-external --extension=.ts -t [ babelify --extensions .ts --extensions .js ] server.ts > release/server.js && cd release && npm prune --production && npm install --production --no-progress"
   },
   "author": "Felix Hageloh",
   "license": "GPL v3 <http://www.gnu.org/licenses/>",
   "private": true,
   "devDependencies": {
+    "@babel/preset-typescript": "^7.29.7",
     "coffee-script": "^1.12.7",
+    "core-js": "^2.6.12",
     "sinon": "^4.0.1",
     "tap-spec": "^5.0.0",
     "tape": "^4.13.3",
     "tape-run": "^9.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
     "uglify-js": "^3.10.4"
   },
   "dependencies": {

@@ -88,7 +88,7 @@
 - (NSScreen*)getNSScreen:(NSNumber*)screenId
 {
     for (NSScreen* screen in [NSScreen screens]) {
-        if ([screen deviceDescription][@"NSScreenNumber"] == screenId) {
+        if ([[screen deviceDescription][@"NSScreenNumber"] isEqualToNumber:screenId]) {
             return screen;
         }
     };

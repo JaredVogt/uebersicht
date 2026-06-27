@@ -12,7 +12,8 @@
         "corejs": "2",
         "modules": "commonjs"
       }
-    ]
+    ],
+    "@babel/preset-typescript"
   ],
   "plugins": [
     "@babel/plugin-proposal-object-rest-spread"

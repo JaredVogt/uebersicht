@@ -14,6 +14,7 @@
 - (void)reset:(NSDictionary*)state;
 - (NSDictionary*)get:(NSString*)widgetId;
 - (NSDictionary*)getSettings:(NSString*)widgetId;
+- (NSString*)screenTargetFor:(NSString*)widgetId;
 - (NSArray*)sortedWidgets;
 
 @end

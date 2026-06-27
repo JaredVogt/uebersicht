@@ -14,6 +14,7 @@
     UBListener* listener;
     NSMutableDictionary* widgets;
     NSMutableDictionary* settings;
+    NSMutableDictionary* screenTargets;
     void (^changeHandler)(NSDictionary*);
     NSDictionary* defaultSettings;
 }
@@ -26,6 +27,7 @@
     if (self) {
         widgets = [[NSMutableDictionary alloc] init];
         settings = [[NSMutableDictionary alloc] init];
+        screenTargets = [[NSMutableDictionary alloc] init];
         listener = [[UBListener alloc] init];
         
         defaultSettings = @{
@@ -60,6 +62,7 @@
                 @"showOnSelectedScreens": @YES,
                 @"showOnMainScreen": @NO,
                 @"hidden": @NO,
+                @"userModified": @YES,
             }];
             [self notifyChange];
         }];
@@ -71,6 +74,7 @@
                 @"showOnMainScreen": @NO,
                 @"hidden": @NO,
                 @"screens": @[],
+                @"userModified": @YES,
             }];
             [self notifyChange];
         }];
@@ -82,6 +86,7 @@
                 @"showOnMainScreen": @YES,
                 @"hidden": @NO,
                 @"screens": @[],
+                @"userModified": @YES,
             }];
             [self notifyChange];
         }];
@@ -124,6 +129,16 @@
             [self notifyChange];
         }];
         
+        [listener on:@"WIDGET_DECLARES_SCREEN" do:^(NSDictionary* data) {
+            NSString* target = data[@"target"];
+            if ([target isKindOfClass:[NSString class]] && target.length > 0) {
+                self->screenTargets[data[@"id"]] = target;
+            } else {
+                [self->screenTargets removeObjectForKey:data[@"id"]];
+            }
+            [self notifyChange];
+        }];
+
         [listener on:@"SCREENS_DID_CHANGE" do:^(NSDictionary* data) {
             [self notifyChange];;
         }];
@@ -162,6 +177,11 @@
 - (NSDictionary*)getSettings:(NSString*)widgetId
 {
     return widgets[widgetId] ? settings[widgetId] : NULL;
+}
+
+- (NSString*)screenTargetFor:(NSString*)widgetId
+{
+    return widgets[widgetId] ? screenTargets[widgetId] : nil;
 }
 
 - (NSArray*)sortedWidgets
@@ -211,10 +231,11 @@
 - (void)selectScreen:(NSNumber*)screenId forWidget:(NSString*)widgetId
 {
     NSArray* screens = settings[widgetId][@"screens"];
-    
+
     if (![screens containsObject:screenId]) {
         settings[widgetId][@"screens"] = [screens arrayByAddingObject:screenId];
     }
+    settings[widgetId][@"userModified"] = @YES;
 }
 
 - (void)deselectScreen:(NSNumber*)screenId forWidget:(NSString*)widgetId
@@ -222,13 +243,14 @@
     NSArray* screens = settings[widgetId][@"screens"];
     NSPredicate *withoutScreen = [NSPredicate
         predicateWithBlock: ^BOOL(id s, NSDictionary * _) {
-            return s != screenId;
+            return ![s isEqualToNumber:screenId];
         }
     ];
-    
+
     settings[widgetId][@"screens"] = [screens
         filteredArrayUsingPredicate: withoutScreen
     ];
+    settings[widgetId][@"userModified"] = @YES;
 }
 
 

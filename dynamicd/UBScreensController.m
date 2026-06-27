@@ -82,10 +82,18 @@ int const MAX_DISPLAYS = 42;
     }
     
     sortedScreens = ids;
-    
+
+    // JSON object keys must be strings, so re-key the names map by string id
+    NSMutableDictionary *namesById = [[NSMutableDictionary alloc]
+        initWithCapacity: screens.count
+    ];
+    for (NSNumber* sid in screens) {
+        namesById[[sid stringValue]] = screens[sid];
+    }
+
     [dispatcher
         dispatch: @"SCREENS_DID_CHANGE"
-        withPayload: sortedScreens
+        withPayload: @{ @"ids": sortedScreens, @"names": namesById }
     ];
 }
 
